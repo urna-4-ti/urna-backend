@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: 'bitnami/postgresql:latest'
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=urna
+      - POSTGRES_PASSWORD=backend
+      - POSTGRES_DB=urna-db
+    volumes:
+      - urna_pg_data:/bitnami/postgresql
+
+volumes:
+  urna_pg_data:
+  
