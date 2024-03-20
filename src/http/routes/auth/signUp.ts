@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FastifyInstance } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { enCrypt } from "../../../lib/crypto";
 import { prisma } from "../../../lib/prisma";
 import { Roles } from "@prisma/client";
@@ -60,19 +60,25 @@ export async function signUp(app: FastifyInstance) {
 				.send({ message: "You cant assing ADMIN role to your account" });
 		}
 
-		const user = await prisma.user.create({
-			data: {
-				email: body.email,
-				name: cryptoName,
-				password: cryptoPassword,
-				class: body.class,
-				enrollment: cryptoEnrollment,
-				role: body.role,
-			},
-		});
+		try {
+			await prisma.user.create({
+				data: {
+					email: body.email,
+					name: cryptoName,
+					password: cryptoPassword,
+					class: body.class,
+					enrollment: cryptoEnrollment,
+					role: body.role,
+				},
+			});
+		} catch (err) {
+			return reply.status(404).send({
+				message: "An error ocurried",
+				code: err.code,
+				errorName: err.name,
+			});
+		}
 
-		return reply.status(201).send({
-			id: user.id,
-		});
+		return reply.status(201);
 	});
 }
