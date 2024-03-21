@@ -14,5 +14,4 @@ FIELD="$TASK_ID "
 
 NEW_COMMIT_MSG="$FIELD $COMMIT_MSG"
 echo "$NEW_COMMIT_MSG" > "$COMMIT_MSG_FILE"
-echo $(cat "$COMMIT_MSG_FILE")
 npx --no -- commitlint --edit ${COMMIT_MSG_FILE} || exit 1

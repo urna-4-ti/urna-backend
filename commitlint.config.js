@@ -33,6 +33,6 @@ export default {
   ],
   rules: {
     "header-match-team-pattern": [2, "always"],
-    "task-key": [2, "always"],
+    "task-key": [2, "always"], 
   },
 };
