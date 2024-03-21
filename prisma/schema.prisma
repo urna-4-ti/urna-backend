@@ -15,16 +15,19 @@ datasource db {
 
 model User {
   id         String  @id @default(uuid())
+  name       String
   role       Roles
-  enrollment Int
-  email      String
+  enrollment String
+  email      String  @unique
+  password   String
   class      Classes
 }
 
 model Candidate {
   id          String        @id @default(uuid())
+  name        String
   cod         Int           @unique
-  picString   String
+  picPath     String
   description String
   status      CandidateType
 }
@@ -57,4 +60,5 @@ enum Classes {
   TA_2
   TA_3
   TA_4
+  ADMIN
 }
