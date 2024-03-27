@@ -1,8 +1,11 @@
 import { z } from "zod";
+// biome-ignore lint/style/useImportType: <explanation>
 import { FastifyInstance } from "fastify";
+import { prisma } from "../../../lib/prisma";
+import { deCrypt } from "../../../lib/crypto";
 
-export async function login(app: FastifyInstance) {
-	app.post("/polls", async (request, reply) => {
+export async function signIn(app: FastifyInstance) {
+	app.post("/auth/signIn", async (request, reply) => {
 		const loginBody = z.object({
 			email: z.string().email("The field is not email"),
 			password: z
@@ -23,5 +26,32 @@ export async function login(app: FastifyInstance) {
 		});
 
 		const body = loginBody.parse(request.body);
+
+		const user = await prisma.user.findUnique({
+			where: {
+				email: body.email,
+			},
+		});
+
+		const isMatch = user && (await deCrypt(body.password, user.password));
+		if (!user || !isMatch) {
+			return reply.code(401).send({
+				message: "Invalid credentials",
+			});
+		}
+
+		const payload = {
+			id: user.id,
+			email: user.email,
+			name: user.name,
+		};
+
+		const token = request.jwt.sign(payload);
+		reply.setCookie("access_token", token, {
+			path: "/",
+			httpOnly: true,
+			secure: true,
+		});
+		return { accessToken: token };
 	});
 }
