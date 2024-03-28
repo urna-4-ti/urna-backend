@@ -43,6 +43,8 @@ app.register(CreatePoliticalParty);
 app.register(FindAllPoliticalParty);
 
 app.register(fastifyHttpErrorsEnhanced);
+app.register(CreateCandidate);
+
 app.listen({ port: 4000 }).then(() => {
 	console.log("server running");
 });
