@@ -2,10 +2,16 @@
 import { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import type { UserJWTPayload } from "../../../utils/types";
+import type { Classes } from "@prisma/client";
 
-export async function FindAllGovernmentForm(app: FastifyInstance) {
-	app.get("/government/form", async (req, reply) => {
+interface RouteParams {
+	class: Classes;
+}
+
+export async function FindAllPoliticalParty(app: FastifyInstance) {
+	app.get<{ Params: RouteParams }>("/political/:class", async (req, reply) => {
 		const { access_token } = req.cookies;
+		const { class: CandidateClass } = req.params;
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
 			access_token as string,
@@ -24,9 +30,13 @@ export async function FindAllGovernmentForm(app: FastifyInstance) {
 		}
 
 		try {
-			const governmentForms = await prisma.politicalType.findMany();
+			const politicalPartys = await prisma.politicalParty.findMany({
+				where: {
+					class: CandidateClass,
+				},
+			});
 			return reply.status(201).send({
-				governments: governmentForms,
+				politicalPartys: politicalPartys,
 			});
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {

@@ -48,6 +48,7 @@ model PoliticalParty {
   name            String
   class           Classes
   politicalTypeId String
+  photoUrl        String
 
   Candidate     Candidate?
   politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id])

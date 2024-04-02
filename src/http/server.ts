@@ -9,6 +9,8 @@ import fCookie from "@fastify/cookie";
 import { signIn } from "./routes/auth/login";
 import { CreateGovernmentForm } from "./routes/government/create";
 import { FindAllGovernmentForm } from "./routes/government/findAll";
+import { CreatePoliticalParty } from "./routes/politicalParty/create";
+import { FindAllPoliticalParty } from "./routes/politicalParty/findAll";
 const app = fastify();
 
 config();
@@ -35,6 +37,8 @@ app.register(signIn);
 app.register(CreateCandidate);
 app.register(CreateGovernmentForm);
 app.register(FindAllGovernmentForm);
+app.register(CreatePoliticalParty);
+app.register(FindAllPoliticalParty);
 
 app.register(fastifyHttpErrorsEnhanced);
 
