@@ -38,6 +38,7 @@ model Candidate {
 model PoliticalType {
   id   String @id @default(uuid())
   name String
+  cod  Int    @unique
 
   PoliticalParty PoliticalParty[]
 }

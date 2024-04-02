@@ -7,6 +7,8 @@ import fjwt, { FastifyJWT } from "@fastify/jwt";
 import { config } from "dotenv";
 import fCookie from "@fastify/cookie";
 import { signIn } from "./routes/auth/login";
+import { CreateGovernmentForm } from "./routes/government/create";
+import { FindAllGovernmentForm } from "./routes/government/findAll";
 const app = fastify();
 
 config();
@@ -31,6 +33,8 @@ app.register(fCookie, {
 app.register(signUp);
 app.register(signIn);
 app.register(CreateCandidate);
+app.register(CreateGovernmentForm);
+app.register(FindAllGovernmentForm);
 
 app.register(fastifyHttpErrorsEnhanced);
 
