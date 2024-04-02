@@ -1,7 +1,7 @@
 // biome-ignore lint/style/useImportType: <explanation>
 import { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
-import { type UserJWTPayload } from "../../../utils/types";
+import type t UserJWTPayload } from "../../../utils/types";
 import type { Classes } from "@prisma/client";
 
 interface RouteParams {

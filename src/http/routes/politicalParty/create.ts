@@ -10,15 +10,14 @@ import { randomUUID } from "node:crypto";
 
 export async function CreatePoliticalParty(app: FastifyInstance) {
 	app.post("/political", async (req, reply) => {
-
 		const body = await req.file();
 		const pump = util.promisify(pipeline);
 		const file = {
 			file: body?.file,
-			filename: body?.filename
-		}
-		
-		delete body?.fields.photo
+			filename: body?.filename,
+		};
+
+		delete body?.fields.photo;
 
 		const bodyschema = z.object({
 			name: z.string(),
@@ -44,16 +43,16 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 			politicalTypeId: z.string().uuid(),
 			photoUrl: z.string().optional(),
 		});
-		const parsedFields = body?.fields as Fields
+		const parsedFields = body?.fields as Fields;
 
 		const fields = {
 			name: parsedFields.name.value,
 			class: parsedFields.class.value,
-			politicalTypeId: parsedFields.politicalTypeId.value
-		}
+			politicalTypeId: parsedFields.politicalTypeId.value,
+		};
 
 		const data = bodyschema.parse(fields);
-		console.log(req.cookies)
+		console.log(req.cookies);
 		const { access_token } = req.cookies;
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
