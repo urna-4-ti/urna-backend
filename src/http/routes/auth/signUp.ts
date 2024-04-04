@@ -71,7 +71,10 @@ export async function signUp(app: FastifyInstance) {
 					role: body.role,
 				},
 			});
-		} catch (err) {
+			console.log("success");
+
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		} catch (err: any) {
 			return reply.status(404).send({
 				message: "An error ocurried",
 				code: err.code,
@@ -79,6 +82,6 @@ export async function signUp(app: FastifyInstance) {
 			});
 		}
 
-		return reply.status(201);
+		return reply.status(201).send("ok");
 	});
 }
