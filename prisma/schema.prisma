@@ -24,18 +24,19 @@ model User {
 }
 
 model Candidate {
-  id          String        @id @default(uuid())
-  name        String
-  cod         Int           @unique
-  picPath     String
-  description String
-  status      CandidateType
+  id               String        @id @default(uuid())
+  name             String
+  cod              Int           @unique
+  picPath          String
+  description      String
+  status           CandidateType
+  politicalPartyId String        @unique
+
+  candidateParty PoliticalParty @relation(fields: [politicalPartyId], references: [id])
 }
 
-enum CandidateType {
-  PESSOA
-  PARTIDO
-  GOVERNO
+model Government {
+  id String @id @default(uuid())
 }
 
 enum Roles {
