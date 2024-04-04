@@ -12,11 +12,11 @@ export async function createVoter(app: FastifyInstance) {
             "TA_1","TA_2","TA_3","TA_4","ADMIN"]),
         });
 
-        const data = bodyschema.parse(
-            req.body
+        const data = createUserBody.parse(
+            request.body
         );
 
-        const { access_token } = req.cookies;
+        const { access_token } = request.cookies;
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
 			access_token as string,
@@ -39,7 +39,7 @@ export async function createVoter(app: FastifyInstance) {
                 enrollment,
                 name,
                 email,
-                class: userClass,
+                class,
             },
         });
         return reply.status(201)
