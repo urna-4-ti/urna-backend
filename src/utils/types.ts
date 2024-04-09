@@ -12,23 +12,20 @@ type UserJWTPayload = {
 	name: string;
 };
 
-enum classes2 {
-	ti1 = "TI_1",
-	TI_2 = "TI_2",
-	TI_3 = "TI_3",
-	TI_4 = "TI_4",
-	TQ_1 = "TQ_1",
-	TQ_2 = "TQ_2",
-	TQ_3 = "TQ_3",
-	TQ_4 = "TQ_4",
-	TMA_1 = "TMA_1",
-	TMA_2 = "TMA_2",
-	TMA_3 = "TMA_3",
-	TMA_4 = "TMA_4",
-	TA_1 = "TA_1",
-	TA_2 = "TA_2",
-	TA_3 = "TA_3",
-	TA_4 = "TA_4",
+interface Fields {
+	[key: string]: Field | Fields;
 }
 
-export { type UserJWTPayload, classes2 };
+
+interface Field {
+	type: 'field';
+	fieldname: string;
+	mimetype: string;
+	encoding: string;
+	value: string;
+	fieldnameTruncated: boolean;
+	valueTruncated: boolean;
+	fields?: Fields;
+ }
+
+export { type UserJWTPayload, Field,Fields};
