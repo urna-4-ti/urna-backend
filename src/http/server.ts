@@ -2,7 +2,9 @@ import fastify from "fastify";
 import cors from "@fastify/cors";
 import { signUp } from "./routes/auth/signUp";
 import fastifyHttpErrorsEnhanced from "fastify-http-errors-enhanced";
+
 import { CreateCandidate } from "./routes/candidate/create";
+
 import fjwt, { FastifyJWT } from "@fastify/jwt";
 import { config } from "dotenv";
 import fCookie from "@fastify/cookie";
@@ -12,6 +14,7 @@ import { FindAllGovernmentForm } from "./routes/government/findAll";
 import { CreatePoliticalParty } from "./routes/politicalParty/create";
 import { FindAllPoliticalParty } from "./routes/politicalParty/findAll";
 import fastMultipart from "@fastify/multipart";
+
 const app = fastify();
 
 config();
@@ -45,6 +48,7 @@ app.register(FindAllPoliticalParty);
 app.register(fastifyHttpErrorsEnhanced);
 app.register(CreateCandidate);
 
+app.register(fastifyHttpErrorsEnhanced);
 app.listen({ port: 4000 }).then(() => {
 	console.log("server running");
 });
