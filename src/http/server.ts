@@ -11,6 +11,7 @@ import { CreateGovernmentForm } from "./routes/government/create";
 import { FindAllGovernmentForm } from "./routes/government/findAll";
 import { CreatePoliticalParty } from "./routes/politicalParty/create";
 import { FindAllPoliticalParty } from "./routes/politicalParty/findAll";
+import fastMultipart from "@fastify/multipart";
 const app = fastify();
 
 config();
@@ -21,6 +22,7 @@ app.register(cors, {
 app.register(fjwt, {
 	secret: "G83W89GASBRIHB$GKOAEQYHhU%Ugaibrei@gsb54abh5rba",
 });
+app.register(fastMultipart);
 
 app.addHook("preHandler", (req, res, next) => {
 	req.jwt = app.jwt;
