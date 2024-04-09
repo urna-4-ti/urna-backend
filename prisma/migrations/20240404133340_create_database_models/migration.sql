@@ -47,6 +47,7 @@ CREATE TABLE "PoliticalParty" (
     "name" TEXT NOT NULL,
     "class" "Classes" NOT NULL,
     "politicalTypeId" TEXT NOT NULL,
+    "photoUrl" TEXT NOT NULL,
 
     CONSTRAINT "PoliticalParty_pkey" PRIMARY KEY ("id")
 );
