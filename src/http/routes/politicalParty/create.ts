@@ -42,6 +42,7 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 			]),
 			politicalTypeId: z.string().uuid(),
 			photoUrl: z.string().optional(),
+			photo: z.string().optional(),
 		});
 		const parsedFields = body?.fields as Fields;
 
@@ -88,7 +89,7 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 				data: {
 					class: data.class,
 					name: data.name,
-					photoUrl: data.photoUrl,
+					photoUrl: data.photo,
 					politicalTypeId: data.politicalTypeId,
 				},
 			});
