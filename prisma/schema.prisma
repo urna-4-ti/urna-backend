@@ -24,15 +24,34 @@ model User {
 }
 
 model Candidate {
-  id               String        @id @default(uuid())
-  name             String
-  cod              Int           @unique
-  picPath          String
-  description      String
-  status           CandidateType
-  politicalPartyId String        @unique
+  id          String @id @default(uuid())
+  name        String
+  cod         Int    @unique
+  picPath     String
+  description String
+
+  politicalPartyId String @unique
 
   candidateParty PoliticalParty @relation(fields: [politicalPartyId], references: [id])
+}
+
+model PoliticalType {
+  id   String @id @default(uuid())
+  name String
+  cod  Int    @unique
+
+  PoliticalParty PoliticalParty[]
+}
+
+model PoliticalParty {
+  id              String  @id @default(uuid())
+  name            String
+  class           Classes
+  politicalTypeId String
+  photoUrl        String
+
+  Candidate     Candidate?
+  politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id])
 }
 
 model Government {
