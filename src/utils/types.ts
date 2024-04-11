@@ -5,3 +5,11 @@ declare module "fastify" {
 		jwt: JWT;
 	}
 }
+
+type UserJWTPayload = {
+	id: string;
+	email: string;
+	name: string;
+};
+
+export type { UserJWTPayload };

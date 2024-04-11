@@ -6,6 +6,7 @@ import fjwt, { FastifyJWT } from "@fastify/jwt";
 import { config } from "dotenv";
 import fCookie from "@fastify/cookie";
 import { signIn } from "./routes/auth/login";
+import { createVoter } from "./routes/createVoter";
 const app = fastify();
 
 config();
@@ -28,6 +29,7 @@ app.register(fCookie, {
 
 app.register(signUp);
 app.register(signIn);
+app.register(createVoter);
 
 app.register(fastifyHttpErrorsEnhanced);
 app.listen({ port: 4000 }).then(() => {

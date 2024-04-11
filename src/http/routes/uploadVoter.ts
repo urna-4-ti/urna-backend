@@ -3,9 +3,9 @@ import { prisma } from "../../lib/prisma";
 import { FastifyInstance } from "fastify";
 import type {UserJWTPayload} from "../../utils/types";
 
-export async function createVoter(app: FastifyInstance) {
-    app.post("/createVoter", async (request, reply) => {
-        const createUserBody = z.object({
+export async function updateVoter(app: FastifyInstance) {
+    app.put("/updateVoter/:userId", async (request, reply) => {
+        const updateUserBody = z.object({
             name: z.string(),
             role: z.enum(["ADMIN","VOTER"]),
             enrollment: z.string(),
@@ -15,10 +15,13 @@ export async function createVoter(app: FastifyInstance) {
             "TA_1","TA_2","TA_3","TA_4","ADMIN"]),
         });
 
-        const data = createUserBody.parse(
+        const data = updateUserBody.parse(
             request.body
         );
 
+        const {userId} = request.params
+
+    
         const { access_token } = request.cookies;
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
@@ -37,9 +40,17 @@ export async function createVoter(app: FastifyInstance) {
 			});
 		}
 
-        const user = await prisma.user.create({
-            data
+        const { enrollment, name, email, class: userClass } = updateUserBody.parse(
+            request.body
+        );
+
+        const updatedUser = await prisma.user.update({
+            where: {
+                id: userId
+            },
+            data,
         });
+
         return reply.status(201)
     });
 }
