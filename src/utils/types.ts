@@ -16,9 +16,8 @@ interface Fields {
 	[key: string]: Field | Fields;
 }
 
-
 interface Field {
-	type: 'field';
+	type: "field";
 	fieldname: string;
 	mimetype: string;
 	encoding: string;
@@ -26,7 +25,6 @@ interface Field {
 	fieldnameTruncated: boolean;
 	valueTruncated: boolean;
 	fields?: Fields;
- }
+}
 
-export {type UserJWTPayload, Field,Fields};
-
+export type { UserJWTPayload, Field, Fields };

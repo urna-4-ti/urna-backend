@@ -17,6 +17,7 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 			filename: body?.filename,
 		};
 
+		// biome-ignore lint/performance/noDelete: <explanation>
 		delete body?.fields.photo;
 
 		const bodyschema = z.object({
@@ -41,7 +42,6 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 				"ADMIN",
 			]),
 			politicalTypeId: z.string().uuid(),
-			photoUrl: z.string().optional(),
 			photo: z.string().optional(),
 		});
 		const parsedFields = body?.fields as Fields;
@@ -73,12 +73,12 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 		}
 
 		try {
-			if (file && file.file) {
+			if (file?.file) {
 				await pump(
 					file.file,
 					fs.createWriteStream(`uploads/${randomUUID()}-${file.filename}`),
 				);
-				data.photoUrl = `uploads/${file.filename}-${randomUUID()}`;
+				data.photo = `uploads/${file.filename}-${randomUUID()}`;
 			} else {
 				return reply.status(404).send({
 					message: "File not provided",

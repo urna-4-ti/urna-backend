@@ -19,7 +19,8 @@ const app = fastify();
 
 config();
 app.register(cors, {
-	origin: "*",
+	origin: "http://localhost:3000",
+	credentials: true,
 });
 
 app.register(fjwt, {
@@ -46,7 +47,6 @@ app.register(CreatePoliticalParty);
 app.register(FindAllPoliticalParty);
 
 app.register(fastifyHttpErrorsEnhanced);
-app.register(CreateCandidate);
 
 app.register(fastifyHttpErrorsEnhanced);
 app.listen({ port: 4000 }).then(() => {
