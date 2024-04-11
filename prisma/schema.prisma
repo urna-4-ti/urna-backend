@@ -25,12 +25,11 @@ model User {
 }
 
 model Candidate {
-  id          String @id @default(uuid())
-  name        String
-  cod         Int    @unique
-  picPath     String
-  description String
-
+  id               String @id @default(uuid())
+  name             String
+  cod              Int    @unique
+  picPath          String
+  description      String
   politicalPartyId String @unique
 
   candidateParty PoliticalParty @relation(fields: [politicalPartyId], references: [id])
