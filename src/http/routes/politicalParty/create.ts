@@ -2,10 +2,24 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../../../lib/prisma";
-import type { UserJWTPayload } from "../../../utils/types";
+import type { Fields, UserJWTPayload } from "../../../utils/types";
+import fs from "node:fs";
+import util from "node:util";
+import { pipeline } from "node:stream";
+import { randomUUID } from "node:crypto";
 
 export async function CreatePoliticalParty(app: FastifyInstance) {
 	app.post("/political", async (req, reply) => {
+		const body = await req.file();
+		console.log(await req.file())
+		const pump = util.promisify(pipeline);
+		const file = {
+			file: body?.file,
+			filename: body?.filename,
+		};
+
+		delete body?.fields.photo;
+
 		const bodyschema = z.object({
 			name: z.string(),
 			class: z.enum([
@@ -28,9 +42,19 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 				"ADMIN",
 			]),
 			politicalTypeId: z.string().uuid(),
-			photoUrl: z.string(),
+			photoUrl: z.string().optional(),
 		});
-		const data = bodyschema.parse(req.body);
+		const parsedFields = body?.fields as Fields;
+
+		const fields = {
+			name: parsedFields.name.value,
+			class: parsedFields.class.value,
+			politicalTypeId: parsedFields.politicalTypeId.value,
+		};
+
+
+		const data = bodyschema.parse(fields);
+		console.log(req.cookies);
 		const { access_token } = req.cookies;
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
@@ -50,6 +74,18 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 		}
 
 		try {
+			if (file?.file) {
+				await pump(
+					file.file,
+					fs.createWriteStream(`uploads/${randomUUID()}-${file.filename}`),
+				);
+				data.photoUrl = `uploads/${file.filename}-${randomUUID()}`;
+			} else {
+				return reply.status(404).send({
+					message: "File not provided",
+				});
+			}
+
 			await prisma.politicalParty.create({
 				data: {
 					class: data.class,

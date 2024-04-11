@@ -54,10 +54,8 @@ model PoliticalParty {
   politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id])
 }
 
-enum CandidateType {
-  PESSOA
-  PARTIDO
-  GOVERNO
+model Government {
+  id String @id @default(uuid())
 }
 
 enum Roles {
