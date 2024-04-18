@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "tsx watch src/http/server.ts",
-    "prepare": "husky"
+    "dev": "tsx watch src/http/server.ts"
   },
   "type": "module",
   "dependencies": {
@@ -28,6 +27,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.2.1",
     "@commitlint/config-conventional": "^19.1.0",
+    "@flydotio/dockerfile": "^0.5.4",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^20.11.27",
     "cz-conventional-changelog": "^3.3.0",

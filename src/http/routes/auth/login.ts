@@ -25,15 +25,19 @@ export async function signIn(app: FastifyInstance) {
 				),
 		});
 
-		const body = loginBody.parse(request.body);
+		const body = await request.body
+		
+
+
+		const data = loginBody.parse(body);
 
 		const user = await prisma.user.findUnique({
 			where: {
-				email: body.email,
+				email: data.email,
 			},
 		});
 
-		const isMatch = user && (await deCrypt(body.password, user.password));
+		const isMatch = user && (await deCrypt(data.password, user.password));
 		if (!user || !isMatch) {
 			return reply.code(401).send({
 				message: "Invalid credentials",

@@ -11,7 +11,6 @@ import { randomUUID } from "node:crypto";
 export async function CreatePoliticalParty(app: FastifyInstance) {
 	app.post("/political", async (req, reply) => {
 		const body = await req.file();
-		console.log(await req.file())
 		const pump = util.promisify(pipeline);
 		const file = {
 			file: body?.file,
@@ -43,6 +42,7 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 			]),
 			politicalTypeId: z.string().uuid(),
 			photoUrl: z.string().optional(),
+			photo: z.string().optional(),
 		});
 		const parsedFields = body?.fields as Fields;
 
@@ -51,7 +51,6 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 			class: parsedFields.class.value,
 			politicalTypeId: parsedFields.politicalTypeId.value,
 		};
-
 
 		const data = bodyschema.parse(fields);
 		console.log(req.cookies);
@@ -74,7 +73,7 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 		}
 
 		try {
-			if (file?.file) {
+			if (file && file.file) {
 				await pump(
 					file.file,
 					fs.createWriteStream(`uploads/${randomUUID()}-${file.filename}`),
@@ -90,7 +89,7 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 				data: {
 					class: data.class,
 					name: data.name,
-					photoUrl: data.photoUrl,
+					photoUrl: data.photo,
 					politicalTypeId: data.politicalTypeId,
 				},
 			});

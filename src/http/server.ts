@@ -26,7 +26,9 @@ app.register(cors, {
 app.register(fjwt, {
 	secret: "G83W89GASBRIHB$GKOAEQYHhU%Ugaibrei@gsb54abh5rba",
 });
-app.register(fastMultipart);
+app.register(fastMultipart, {
+	attachFieldsToBody: "keyValues",
+});
 
 app.addHook("preHandler", (req, res, next) => {
 	req.jwt = app.jwt;
@@ -45,9 +47,7 @@ app.register(CreateGovernmentForm);
 app.register(FindAllGovernmentForm);
 app.register(CreatePoliticalParty);
 app.register(FindAllPoliticalParty);
-
 app.register(fastifyHttpErrorsEnhanced);
- 
 app.listen({ port: 4000 }).then(() => {
 	console.log("server running");
 });
