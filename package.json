@@ -1,11 +1,15 @@
 {
   "name": "urna-backend",
   "version": "1.0.0",
+  "main": ".dist/http/server.js",
   "description": "",
   "scripts": {
-    "dev": "tsx watch src/http/server.ts"
+    "dev": "tsx watch src/http/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node .dist/http/server.js"
   },
   "type": "module",
+  "types": "index.d.ts",
   "dependencies": {
     "@fastify/busboy": "^2.1.1",
     "@fastify/cookie": "^9.3.1",
@@ -28,6 +32,7 @@
     "@commitlint/cli": "^19.2.1",
     "@commitlint/config-conventional": "^19.1.0",
     "@flydotio/dockerfile": "^0.5.4",
+    "@types/bcrypt": "^5.0.2",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^20.11.27",
     "cz-conventional-changelog": "^3.3.0",

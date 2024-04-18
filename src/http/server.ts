@@ -19,7 +19,7 @@ const app = fastify();
 
 config();
 app.register(cors, {
-	origin: "http://localhost:3000",
+	origin: process.env.FRONTEND_URL,
 	credentials: true,
 });
 
@@ -47,7 +47,7 @@ app.register(CreateGovernmentForm);
 app.register(FindAllGovernmentForm);
 app.register(CreatePoliticalParty);
 app.register(FindAllPoliticalParty);
-app.register(fastifyHttpErrorsEnhanced);
-app.listen({ port: 4000 }).then(() => {
-	console.log("server running");
+
+app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
+	console.log("server running", value);
 });
