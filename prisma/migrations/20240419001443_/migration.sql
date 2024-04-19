@@ -11,6 +11,7 @@ CREATE TABLE "User" (
     "role" "Roles" NOT NULL,
     "enrollment" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "hashPassword" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "class" "Classes" NOT NULL,
 

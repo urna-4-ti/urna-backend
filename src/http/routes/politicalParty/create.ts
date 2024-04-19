@@ -10,14 +10,13 @@ import { randomUUID } from "node:crypto";
 
 export async function CreatePoliticalParty(app: FastifyInstance) {
 	app.post("/political", async (req, reply) => {
-		const body = await req.file();
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		const body: any = await req.body;
 		const pump = util.promisify(pipeline);
 		const file = {
-			file: body?.file,
-			filename: body?.filename,
+			file: body?.photo.file,
+			filename: body?.photo.filename,
 		};
-
-		delete body?.fields.photo;
 
 		const bodyschema = z.object({
 			name: z.string(),
@@ -44,16 +43,14 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 			photoUrl: z.string().optional(),
 			photo: z.string().optional(),
 		});
-		const parsedFields = body?.fields as Fields;
 
 		const fields = {
-			name: parsedFields.name.value,
-			class: parsedFields.class.value,
-			politicalTypeId: parsedFields.politicalTypeId.value,
+			name: body.name.value,
+			class: body.class.value,
+			politicalTypeId: body.politicalTypeId.value,
 		};
 
 		const data = bodyschema.parse(fields);
-		console.log(req.cookies);
 		const { access_token } = req.cookies;
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
@@ -73,12 +70,12 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 		}
 
 		try {
-			if (file && file.file) {
+			if (file?.file) {
 				await pump(
 					file.file,
 					fs.createWriteStream(`uploads/${randomUUID()}-${file.filename}`),
 				);
-				data.photoUrl = `uploads/${file.filename}-${randomUUID()}`;
+				data.photoUrl = `uploads/${randomUUID()}-${file.filename}`;
 			} else {
 				return reply.status(404).send({
 					message: "File not provided",
@@ -89,7 +86,7 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 				data: {
 					class: data.class,
 					name: data.name,
-					photoUrl: data.photo,
+					photoUrl: data.photoUrl,
 					politicalTypeId: data.politicalTypeId,
 				},
 			});

@@ -27,8 +27,9 @@ app.register(fjwt, {
 	secret: "G83W89GASBRIHB$GKOAEQYHhU%Ugaibrei@gsb54abh5rba",
 });
 app.register(fastMultipart, {
-	attachFieldsToBody: "keyValues",
+	attachFieldsToBody: true,
 });
+// app.register(bodyParser);
 
 app.addHook("preHandler", (req, res, next) => {
 	req.jwt = app.jwt;

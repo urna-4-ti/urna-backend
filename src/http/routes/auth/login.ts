@@ -2,7 +2,7 @@ import { z } from "zod";
 // biome-ignore lint/style/useImportType: <explanation>
 import { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
-import { deCrypt } from "../../../lib/crypto";
+import { compareHash, decrypt } from "../../../lib/crypto";
 
 export async function signIn(app: FastifyInstance) {
 	app.post("/auth/signIn", async (request, reply) => {
@@ -25,11 +25,14 @@ export async function signIn(app: FastifyInstance) {
 				),
 		});
 
-		const body = await request.body
-		
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		const body: any = await request.body;
+		const fields = {
+			email: body.email.value,
+			password: body.password.value,
+		};
 
-
-		const data = loginBody.parse(body);
+		const data = loginBody.parse(fields);
 
 		const user = await prisma.user.findUnique({
 			where: {
@@ -37,13 +40,17 @@ export async function signIn(app: FastifyInstance) {
 			},
 		});
 
-		const isMatch = user && (await deCrypt(data.password, user.password));
+		console.log(user);
+
+		const isMatch =
+			user && (await compareHash(data.password, user.hashPassword));
 		if (!user || !isMatch) {
 			return reply.code(401).send({
 				message: "Invalid credentials",
 			});
 		}
 
+		user.name = await decrypt(user.name);
 		const payload = {
 			id: user.id,
 			email: user.email,

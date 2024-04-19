@@ -10,29 +10,29 @@ import { randomUUID } from "node:crypto";
 
 export async function CreateCandidate(app: FastifyInstance) {
 	app.post("/candidate", async (req, reply) => {
-		const body = await req.file();
+		// console.log(req.body);
+
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		const body: any = await req.body;
+		console.log(body);
+
 		const pump = util.promisify(pipeline);
 		const file = {
-			file: body?.file,
-			filename: body?.filename,
+			file: body?.photo.file,
+			filename: body?.photo.filename,
 		};
-
-		console.log(body?.fields)
-
 		// biome-ignore lint/performance/noDelete: <explanation>
-		delete body?.fields.photo;
+		delete body?.photo;
 
-		
-		const parsedFields = body?.fields as Fields;
-		
-		
 		const fields = {
-			name: parsedFields.name.value,
-			cod: Number(parsedFields.cod.value),
-			description: parsedFields.description.value,
-			politicalPartyId: parsedFields.politicalPartyId.value,
+			name: body.name.value,
+			cod: Number(body.cod.value),
+			description: body.description.value,
+			politicalPartyId: body.politicalPartyId.value,
 		};
-		console.log(fields.cod, typeof fields.cod);
+
+		// console.log(fields);
+
 		const bodyschema = z.object({
 			cod: z.number(),
 			name: z.string(),
@@ -71,16 +71,16 @@ export async function CreateCandidate(app: FastifyInstance) {
 					message: "File not provided",
 				});
 			}
-			console.log(data)
+			console.log(data);
 			await prisma.candidate.create({
-				data:{
+				data: {
 					cod: data.cod,
-					description:data.description,
-					name:data.name,
-					picPath:data.picPath,
-					politicalPartyId: data.politicalPartyId
-				}
-			})
+					description: data.description,
+					name: data.name,
+					picPath: data.picPath,
+					politicalPartyId: data.politicalPartyId,
+				},
+			});
 			return reply.status(201).send();
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {

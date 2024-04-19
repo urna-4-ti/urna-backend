@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
-import { enCrypt } from "../../../lib/crypto";
+import { hashing, encrypt } from "../../../lib/crypto";
 import { prisma } from "../../../lib/prisma";
 import { Roles } from "@prisma/client";
 
@@ -51,9 +51,10 @@ export async function signUp(app: FastifyInstance) {
 
 		const body = loginBody.parse(request.body);
 
-		const cryptoPassword = await enCrypt(body.password);
-		const cryptoName = await enCrypt(body.name);
-		const cryptoEnrollment = await enCrypt(body.enrollment);
+		const cryptoPassword = await encrypt(body.password);
+		const hashPassword = await hashing(body.password);
+		const cryptoName = await encrypt(body.name);
+		const cryptoEnrollment = await encrypt(body.enrollment);
 		if (body.role === Roles.ADMIN) {
 			return reply
 				.status(400)
@@ -66,6 +67,7 @@ export async function signUp(app: FastifyInstance) {
 					email: body.email,
 					name: cryptoName,
 					password: cryptoPassword,
+					hashPassword: hashPassword,
 					class: body.class,
 					enrollment: cryptoEnrollment,
 					role: body.role,
