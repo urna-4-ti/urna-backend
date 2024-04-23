@@ -1,7 +1,4 @@
 -- CreateEnum
-CREATE TYPE "CandidateType" AS ENUM ('PESSOA', 'PARTIDO', 'GOVERNO');
-
--- CreateEnum
 CREATE TYPE "Roles" AS ENUM ('ADMIN', 'VOTER');
 
 -- CreateEnum
@@ -14,6 +11,7 @@ CREATE TABLE "User" (
     "role" "Roles" NOT NULL,
     "enrollment" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "hashPassword" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "class" "Classes" NOT NULL,
 
@@ -47,8 +45,16 @@ CREATE TABLE "PoliticalParty" (
     "name" TEXT NOT NULL,
     "class" "Classes" NOT NULL,
     "politicalTypeId" TEXT NOT NULL,
+    "photoUrl" TEXT NOT NULL,
 
     CONSTRAINT "PoliticalParty_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Government" (
+    "id" TEXT NOT NULL,
+
+    CONSTRAINT "Government_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex

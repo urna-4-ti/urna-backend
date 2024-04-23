@@ -1,7 +1,7 @@
 // biome-ignore lint/style/useImportType: <explanation>
 import { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
-import { classes2, type UserJWTPayload } from "../../../utils/types";
+import {type UserJWTPayload } from "../../../utils/types";
 import type { Classes } from "@prisma/client";
 
 interface RouteParams {
@@ -13,7 +13,6 @@ export async function FindAllPoliticalParty(app: FastifyInstance) {
 		const { access_token } = req.cookies;
 		const { class: CandidateClass } = req.params;
 
-		console.log(classes2.TA_1);
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
 			access_token as string,

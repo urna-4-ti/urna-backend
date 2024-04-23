@@ -11,25 +11,26 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id         String  @id @default(uuid())
-  name       String
-  role       Roles
-  enrollment String
-  email      String  @unique
-  password   String
-  class      Classes
+  id           String  @id @default(uuid())
+  name         String
+  role         Roles
+  enrollment   String
+  email        String  @unique
+  hashPassword String
+  password     String
+  class        Classes
 }
 
 model Candidate {
-  id          String @id @default(uuid())
-  name        String
-  cod         Int    @unique
-  picPath     String
-  description String
-
+  id               String @id @default(uuid())
+  name             String
+  cod              Int    @unique
+  picPath          String
+  description      String
   politicalPartyId String @unique
 
   candidateParty PoliticalParty @relation(fields: [politicalPartyId], references: [id])
@@ -55,7 +56,9 @@ model PoliticalParty {
 }
 
 model Government {
-  id String @id @default(uuid())
+  id   String @id @default(uuid())
+  cod  Int
+  name String
 }
 
 enum Roles {

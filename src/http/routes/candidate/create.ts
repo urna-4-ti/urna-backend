@@ -2,18 +2,45 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../../../lib/prisma";
-import type { UserJWTPayload } from "../../../utils/types";
+import type { Fields, UserJWTPayload } from "../../../utils/types";
+import fs from "node:fs";
+import util from "node:util";
+import { pipeline } from "node:stream";
+import { randomUUID } from "node:crypto";
 
 export async function CreateCandidate(app: FastifyInstance) {
 	app.post("/candidate", async (req, reply) => {
+		// console.log(req.body);
+
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		const body: any = await req.body;
+		console.log(body);
+
+		const pump = util.promisify(pipeline);
+		const file = {
+			file: body?.photo.file,
+			filename: body?.photo.filename,
+		};
+		// biome-ignore lint/performance/noDelete: <explanation>
+		delete body?.photo;
+
+		const fields = {
+			name: body.name.value,
+			cod: Number(body.cod.value),
+			description: body.description.value,
+			politicalPartyId: body.politicalPartyId.value,
+		};
+
+		// console.log(fields);
+
 		const bodyschema = z.object({
 			cod: z.number(),
 			name: z.string(),
-			picPath: z.string(),
+			picPath: z.string().optional(),
 			politicalPartyId: z.string(),
 			description: z.string(),
 		});
-		const data = bodyschema.parse(req.body);
+		const data = bodyschema.parse(fields);
 		const { access_token } = req.cookies;
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
@@ -33,9 +60,25 @@ export async function CreateCandidate(app: FastifyInstance) {
 		}
 
 		try {
+			if (file?.file) {
+				await pump(
+					file.file,
+					fs.createWriteStream(`uploads/${randomUUID()}-${file.filename}`),
+				);
+				data.picPath = `uploads/${randomUUID()}-${file.filename}`;
+			} else {
+				return reply.status(404).send({
+					message: "File not provided",
+				});
+			}
+			console.log(data);
 			await prisma.candidate.create({
 				data: {
-					...data,
+					cod: data.cod,
+					description: data.description,
+					name: data.name,
+					picPath: data.picPath,
+					politicalPartyId: data.politicalPartyId,
 				},
 			});
 			return reply.status(201).send();

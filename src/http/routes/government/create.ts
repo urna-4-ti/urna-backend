@@ -2,7 +2,7 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../../../lib/prisma";
-import type { UserJWTPayload } from "../../../utils/types";
+import type { Fields, UserJWTPayload } from "../../../utils/types";
 
 export async function CreateGovernmentForm(app: FastifyInstance) {
 	app.post("/government/form", async (req, reply) => {
@@ -10,7 +10,14 @@ export async function CreateGovernmentForm(app: FastifyInstance) {
 			cod: z.number(),
 			name: z.string(),
 		});
-		const data = bodyschema.parse(req.body);
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		const body: any = req.body;
+
+		const fields = {
+			cod: Number(body.cod.values),
+			name: body.name.values,
+		};
+		const data = bodyschema.parse(fields);
 		const { access_token } = req.cookies;
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
