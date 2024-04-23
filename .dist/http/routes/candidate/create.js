@@ -12,22 +12,24 @@ const node_stream_1 = require("node:stream");
 const node_crypto_1 = require("node:crypto");
 async function CreateCandidate(app) {
     app.post("/candidate", async (req, reply) => {
-        const body = await req.file();
+        // console.log(req.body);
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        const body = await req.body;
+        console.log(body);
         const pump = node_util_1.default.promisify(node_stream_1.pipeline);
         const file = {
-            file: body?.file,
-            filename: body?.filename,
+            file: body?.photo.file,
+            filename: body?.photo.filename,
         };
         // biome-ignore lint/performance/noDelete: <explanation>
-        delete body?.fields.photo;
-        const parsedFields = body?.fields;
+        delete body?.photo;
         const fields = {
-            name: parsedFields.name.value,
-            cod: Number(parsedFields.cod.value),
-            description: parsedFields.description.value,
-            politicalPartyId: parsedFields.politicalPartyId.value,
+            name: body.name.value,
+            cod: Number(body.cod.value),
+            description: body.description.value,
+            politicalPartyId: body.politicalPartyId.value,
         };
-        console.log(fields.cod, typeof fields.cod);
+        // console.log(fields);
         const bodyschema = zod_1.z.object({
             cod: zod_1.z.number(),
             name: zod_1.z.string(),
@@ -58,14 +60,15 @@ async function CreateCandidate(app) {
                     message: "File not provided",
                 });
             }
+            console.log(data);
             await prisma_1.prisma.candidate.create({
                 data: {
                     cod: data.cod,
                     description: data.description,
                     name: data.name,
                     picPath: data.picPath,
-                    politicalPartyId: data.politicalPartyId
-                }
+                    politicalPartyId: data.politicalPartyId,
+                },
             });
             return reply.status(201).send();
             // biome-ignore lint/suspicious/noExplicitAny: <explanation>

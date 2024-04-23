@@ -15,18 +15,26 @@ async function signIn(app) {
                 .refine((password) => /[0-9]/.test(password), "The password must contain at least one number")
                 .refine((password) => /[#-@]/.test(password), "The password must contain at least one of the special characters: #, -, @"),
         });
-        const body = loginBody.parse(request.body);
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        const body = await request.body;
+        const fields = {
+            email: body.email.value,
+            password: body.password.value,
+        };
+        const data = loginBody.parse(fields);
         const user = await prisma_1.prisma.user.findUnique({
             where: {
-                email: body.email,
+                email: data.email,
             },
         });
-        const isMatch = user && (await (0, crypto_1.deCrypt)(body.password, user.password));
+        console.log(user);
+        const isMatch = user && (await (0, crypto_1.compareHash)(data.password, user.hashPassword));
         if (!user || !isMatch) {
             return reply.code(401).send({
                 message: "Invalid credentials",
             });
         }
+        user.name = await (0, crypto_1.decrypt)(user.name);
         const payload = {
             id: user.id,
             email: user.email,

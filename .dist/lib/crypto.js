@@ -22,15 +22,30 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deCrypt = exports.enCrypt = void 0;
+exports.decrypt = exports.encrypt = exports.compareHash = exports.hashing = void 0;
 const bcrypt = __importStar(require("bcrypt"));
-async function enCrypt(data) {
+const crypto_js_1 = __importDefault(require("crypto-js"));
+const key = "FHOUWGAbgiuggvbyIGHhG";
+async function hashing(data) {
     const salt = await bcrypt.genSalt();
     return await bcrypt.hash(data, salt);
 }
-exports.enCrypt = enCrypt;
-async function deCrypt(data, has) {
+exports.hashing = hashing;
+async function compareHash(data, has) {
     return await bcrypt.compare(data, has);
 }
-exports.deCrypt = deCrypt;
+exports.compareHash = compareHash;
+async function encrypt(data) {
+    const encrypted = crypto_js_1.default.AES.encrypt(data, key).toString();
+    return encrypted;
+}
+exports.encrypt = encrypt;
+async function decrypt(encrypted) {
+    const decrypted = crypto_js_1.default.AES.decrypt(encrypted, key).toString(crypto_js_1.default.enc.Utf8);
+    return decrypted;
+}
+exports.decrypt = decrypt;

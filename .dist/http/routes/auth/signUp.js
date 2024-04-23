@@ -40,9 +40,10 @@ async function signUp(app) {
         });
         console.log(request.body);
         const body = loginBody.parse(request.body);
-        const cryptoPassword = await (0, crypto_1.enCrypt)(body.password);
-        const cryptoName = await (0, crypto_1.enCrypt)(body.name);
-        const cryptoEnrollment = await (0, crypto_1.enCrypt)(body.enrollment);
+        const cryptoPassword = await (0, crypto_1.encrypt)(body.password);
+        const hashPassword = await (0, crypto_1.hashing)(body.password);
+        const cryptoName = await (0, crypto_1.encrypt)(body.name);
+        const cryptoEnrollment = await (0, crypto_1.encrypt)(body.enrollment);
         if (body.role === client_1.Roles.ADMIN) {
             return reply
                 .status(400)
@@ -54,6 +55,7 @@ async function signUp(app) {
                     email: body.email,
                     name: cryptoName,
                     password: cryptoPassword,
+                    hashPassword: hashPassword,
                     class: body.class,
                     enrollment: cryptoEnrollment,
                     role: body.role,

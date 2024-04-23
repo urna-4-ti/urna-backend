@@ -12,14 +12,13 @@ const node_stream_1 = require("node:stream");
 const node_crypto_1 = require("node:crypto");
 async function CreatePoliticalParty(app) {
     app.post("/political", async (req, reply) => {
-        const body = await req.file();
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        const body = await req.body;
         const pump = node_util_1.default.promisify(node_stream_1.pipeline);
         const file = {
-            file: body?.file,
-            filename: body?.filename,
+            file: body?.photo.file,
+            filename: body?.photo.filename,
         };
-        // biome-ignore lint/performance/noDelete: <explanation>
-        delete body?.fields.photo;
         const bodyschema = zod_1.z.object({
             name: zod_1.z.string(),
             class: zod_1.z.enum([
@@ -42,16 +41,15 @@ async function CreatePoliticalParty(app) {
                 "ADMIN",
             ]),
             politicalTypeId: zod_1.z.string().uuid(),
+            photoUrl: zod_1.z.string().optional(),
             photo: zod_1.z.string().optional(),
         });
-        const parsedFields = body?.fields;
         const fields = {
-            name: parsedFields.name.value,
-            class: parsedFields.class.value,
-            politicalTypeId: parsedFields.politicalTypeId.value,
+            name: body.name.value,
+            class: body.class.value,
+            politicalTypeId: body.politicalTypeId.value,
         };
         const data = bodyschema.parse(fields);
-        console.log(req.cookies);
         const { access_token } = req.cookies;
         const userJWTData = app.jwt.decode(access_token);
         const loggedUser = await prisma_1.prisma.user.findUnique({
@@ -67,7 +65,7 @@ async function CreatePoliticalParty(app) {
         try {
             if (file?.file) {
                 await pump(file.file, node_fs_1.default.createWriteStream(`uploads/${(0, node_crypto_1.randomUUID)()}-${file.filename}`));
-                data.photo = `uploads/${file.filename}-${(0, node_crypto_1.randomUUID)()}`;
+                data.photoUrl = `uploads/${(0, node_crypto_1.randomUUID)()}-${file.filename}`;
             }
             else {
                 return reply.status(404).send({
@@ -78,7 +76,7 @@ async function CreatePoliticalParty(app) {
                 data: {
                     class: data.class,
                     name: data.name,
-                    photoUrl: data.photo,
+                    photoUrl: data.photoUrl,
                     politicalTypeId: data.politicalTypeId,
                 },
             });

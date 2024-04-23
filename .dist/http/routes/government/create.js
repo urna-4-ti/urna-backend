@@ -9,7 +9,13 @@ async function CreateGovernmentForm(app) {
             cod: zod_1.z.number(),
             name: zod_1.z.string(),
         });
-        const data = bodyschema.parse(req.body);
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        const body = req.body;
+        const fields = {
+            cod: Number(body.cod.values),
+            name: body.name.values,
+        };
+        const data = bodyschema.parse(fields);
         const { access_token } = req.cookies;
         const userJWTData = app.jwt.decode(access_token);
         const loggedUser = await prisma_1.prisma.user.findUnique({
