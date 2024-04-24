@@ -9,9 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -26,14 +26,13 @@ model User {
 }
 
 model Candidate {
-  id               String @id @default(uuid())
+  id               String         @id @default(uuid())
   name             String
-  cod              Int    @unique
+  cod              Int            @unique
   picPath          String
   description      String
-  politicalPartyId String @unique
-
-  candidateParty PoliticalParty @relation(fields: [politicalPartyId], references: [id])
+  politicalPartyId String
+  PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id])
 }
 
 model PoliticalType {
@@ -51,8 +50,8 @@ model PoliticalParty {
   politicalTypeId String
   photoUrl        String
 
-  Candidate     Candidate?
   politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id])
+  candidates    Candidate[]
 }
 
 model Government {
