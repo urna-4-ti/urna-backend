@@ -15,6 +15,7 @@ import { CreatePoliticalParty } from "./routes/politicalParty/create";
 import { FindAllPoliticalParty } from "./routes/politicalParty/findAll";
 import fastMultipart from "@fastify/multipart";
 
+import { createVoter } from "./routes/createVoter";
 const app = fastify();
 
 config();
@@ -48,6 +49,7 @@ app.register(CreateGovernmentForm);
 app.register(FindAllGovernmentForm);
 app.register(CreatePoliticalParty);
 app.register(FindAllPoliticalParty);
+app.register(createVoter);
 
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
 	console.log("server running", value);
