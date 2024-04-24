@@ -14,4 +14,3 @@ services:
 
 volumes:
   urna_pg_data:
-  

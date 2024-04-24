@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
-import { enCrypt } from "../../../lib/crypto";
+import { hashing, encrypt } from "../../../lib/crypto";
 import { prisma } from "../../../lib/prisma";
 import { Roles } from "@prisma/client";
 
@@ -47,41 +47,67 @@ export async function signUp(app: FastifyInstance) {
 			]),
 		});
 
-		console.log(request.body);
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		const body: any = request.body;
 
-		const body = loginBody.parse(request.body);
+		const fields = {
+			email: body.email.value,
+			password: body.password.value,
+			name: body.name.value,
+			class: body.class.value,
+			role: body.role.value,
+			enrollment: body.enrollment.value,
+		};
+		const data = loginBody.parse(fields);
 
-		const cryptoPassword = await enCrypt(body.password);
-		const cryptoName = await enCrypt(body.name);
-		const cryptoEnrollment = await enCrypt(body.enrollment);
-		if (body.role === Roles.ADMIN) {
+		const cryptoPassword = await encrypt(data.password);
+		const hashPassword = await hashing(data.password);
+		const cryptoName = await encrypt(data.name);
+		const cryptoEnrollment = await encrypt(data.enrollment);
+
+		if (data.role === Roles.ADMIN) {
 			return reply
 				.status(400)
 				.send({ message: "You cant assing ADMIN role to your account" });
 		}
+		const obj = {
+			data: {
+				email: data.email,
+				name: cryptoName,
+				password: cryptoPassword,
+				hashPassword: hashPassword,
+				class: data.class,
+				enrollment: cryptoEnrollment,
+				role: data.role,
+			},
+		};
+		console.log(obj);
 
 		try {
 			await prisma.user.create({
 				data: {
-					email: body.email,
+					email: data.email,
 					name: cryptoName,
 					password: cryptoPassword,
-					class: body.class,
+					hashPassword: hashPassword,
+					class: data.class,
 					enrollment: cryptoEnrollment,
-					role: body.role,
+					role: data.role,
 				},
 			});
 			console.log("success");
 
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {
+			console.error(err);
 			return reply.status(404).send({
 				message: "An error ocurried",
 				code: err.code,
 				errorName: err.name,
+				error: err,
 			});
 		}
 
-		return reply.status(201).send("ok");
+		return reply.status(201).send();
 	});
 }

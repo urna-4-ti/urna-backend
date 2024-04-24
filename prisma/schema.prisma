@@ -9,35 +9,36 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id         String  @id @default(uuid())
-  name       String
-  role       Roles
-  enrollment String
-  email      String  @unique
-  password   String
-  class      Classes
+  id           String  @id @default(uuid())
+  name         String
+  role         Roles
+  enrollment   String
+  email        String  @unique
+  hashPassword String
+  password     String
+  class        Classes
 }
 
 model Candidate {
-  id          String @id @default(uuid())
-  name        String
-  cod         Int    @unique
-  picPath     String
-  description String
-
-  politicalPartyId String @unique
-
-  candidateParty PoliticalParty @relation(fields: [politicalPartyId], references: [id])
+  id               String         @id @default(uuid())
+  name             String
+  cod              Int            @unique
+  picPath          String
+  description      String
+  politicalPartyId String
+  PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id])
 }
 
 model PoliticalType {
   id   String @id @default(uuid())
   name String
+  cod  Int    @unique
 
   PoliticalParty PoliticalParty[]
 }
@@ -47,15 +48,16 @@ model PoliticalParty {
   name            String
   class           Classes
   politicalTypeId String
+  photoUrl        String
 
-  Candidate     Candidate?
   politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id])
+  candidates    Candidate[]
 }
 
-enum CandidateType {
-  PESSOA
-  PARTIDO
-  GOVERNO
+model Government {
+  id   String @id @default(uuid())
+  cod  Int
+  name String
 }
 
 enum Roles {

@@ -1,23 +1,30 @@
 {
   "name": "urna-backend",
   "version": "1.0.0",
+  "main": ".dist/http/server.js",
   "description": "",
   "scripts": {
     "dev": "tsx watch src/http/server.ts",
-    "prepare": "husky"
+    "build": "tsc -p tsconfig.json",
+    "start": "node .dist/http/server.js"
   },
-  "type": "module",
+  "types": "index.d.ts",
   "dependencies": {
+    "@fastify/busboy": "^2.1.1",
     "@fastify/cookie": "^9.3.1",
     "@fastify/cors": "^9.0.1",
     "@fastify/jwt": "^8.0.0",
+    "@fastify/multipart": "^8.2.0",
     "@prisma/client": "5.11.0",
     "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
     "crypto-js": "^4.2.0",
+    "cz": "^1.8.2",
     "cz-customizable": "^7.0.0",
     "dotenv": "^16.4.5",
     "fastify": "^4.26.2",
     "fastify-http-errors-enhanced": "^5.0.3",
+    "js-sha3": "^0.9.3",
     "prisma": "^5.11.0",
     "tsx": "^4.7.1",
     "zod": "^3.22.4"
@@ -25,6 +32,9 @@
   "devDependencies": {
     "@commitlint/cli": "^19.2.1",
     "@commitlint/config-conventional": "^19.1.0",
+    "@flydotio/dockerfile": "^0.5.4",
+    "@types/bcrypt": "^5.0.2",
+    "@types/body-parser": "^1.19.5",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^20.11.27",
     "cz-conventional-changelog": "^3.3.0",
@@ -33,7 +43,7 @@
   },
   "config": {
     "commitizen": {
-      "path": "./node_modules/cz-customizable"
+      "path": "./node_modules/cz-conventional-changelog"
     },
     "cz-customizable": {
       "config": ".cz-config.cjs"
