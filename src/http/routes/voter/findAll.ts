@@ -8,7 +8,7 @@ interface RouteParams {
 }
 
 export async function getAllVoters(app: FastifyInstance) {
-	app.get<{ Params: RouteParams }>("/voter/:class", async (req, reply) => {
+	app.get<{ Params: RouteParams }>("/voter", async (req, reply) => {
 		const { class: voterClass } = req.params;
 		const { access_token } = req.cookies;
 

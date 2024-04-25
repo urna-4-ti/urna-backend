@@ -13,6 +13,7 @@ import { FindAllGovernmentForm } from "./routes/government/findAll";
 import { CreatePoliticalParty } from "./routes/politicalParty/create";
 import { FindAllPoliticalParty } from "./routes/politicalParty/findAll";
 import { createVoter } from "./routes/voter/create";
+import { getAllVoters } from "./routes/voter/findAll";
 
 const app = fastify();
 
@@ -47,6 +48,7 @@ app.register(FindAllGovernmentForm);
 app.register(CreatePoliticalParty);
 app.register(FindAllPoliticalParty);
 app.register(createVoter);
+app.register(getAllVoters)
 
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
 	console.log("server running", value);
