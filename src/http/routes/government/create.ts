@@ -14,8 +14,8 @@ export async function CreateGovernmentForm(app: FastifyInstance) {
 		const body: any = req.body;
 
 		const fields = {
-			cod: Number(body.cod.values),
-			name: body.name.values,
+			cod: Number(body.cod.value),
+			name: body.name.value,
 		};
 		const data = bodyschema.parse(fields);
 		const { access_token } = req.cookies;
