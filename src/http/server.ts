@@ -1,21 +1,19 @@
-import fastify from "fastify";
-import cors from "@fastify/cors";
-import { signUp } from "./routes/auth/signUp";
-import fastifyHttpErrorsEnhanced from "fastify-http-errors-enhanced";
-
-import { CreateCandidate } from "./routes/candidate/create";
-
-import fjwt, { FastifyJWT } from "@fastify/jwt";
+import fjwt from "@fastify/jwt";
 import { config } from "dotenv";
 import fCookie from "@fastify/cookie";
+import fastMultipart from "@fastify/multipart";
+import fastify from "fastify";
+import cors from "@fastify/cors";
+// routes
+import { signUp } from "./routes/auth/signUp";
 import { signIn } from "./routes/auth/login";
+import { CreateCandidate } from "./routes/candidate/create";
 import { CreateGovernmentForm } from "./routes/government/create";
 import { FindAllGovernmentForm } from "./routes/government/findAll";
 import { CreatePoliticalParty } from "./routes/politicalParty/create";
 import { FindAllPoliticalParty } from "./routes/politicalParty/findAll";
-import fastMultipart from "@fastify/multipart";
+import { createVoter } from "./routes/voter/create";
 
-import { createVoter } from "./routes/createVoter";
 const app = fastify();
 
 config();
@@ -30,7 +28,6 @@ app.register(fjwt, {
 app.register(fastMultipart, {
 	attachFieldsToBody: true,
 });
-// app.register(bodyParser);
 
 app.addHook("preHandler", (req, res, next) => {
 	req.jwt = app.jwt;
@@ -41,7 +38,7 @@ app.register(fCookie, {
 	secret: "some-secret-key",
 	hook: "preHandler",
 });
-
+// routes
 app.register(signUp);
 app.register(signIn);
 app.register(CreateCandidate);

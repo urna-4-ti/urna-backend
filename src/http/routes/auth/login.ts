@@ -24,6 +24,7 @@ export async function signIn(app: FastifyInstance) {
 					"The password must contain at least one of the special characters: #, -, @",
 				),
 		});
+		console.log(request.parts);
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = await request.body;
