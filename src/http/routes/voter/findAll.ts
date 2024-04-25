@@ -1,15 +1,10 @@
-import type { Classes } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
+import { decrypt } from "src/lib/crypto";
 import { prisma } from "src/lib/prisma";
 import type { UserJWTPayload } from "src/utils/types";
 
-interface RouteParams {
-	class: Classes;
-}
-
 export async function getAllVoters(app: FastifyInstance) {
-	app.get<{ Params: RouteParams }>("/voter/:class", async (req, reply) => {
-		const { class: voterClass } = req.params;
+	app.get("/voter", async (req, reply) => {
 		const { access_token } = req.cookies;
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
@@ -27,13 +22,27 @@ export async function getAllVoters(app: FastifyInstance) {
 				message: "Action not permitted",
 			});
 		}
-
 		try {
-			const classVoters = await prisma.user.findMany({
-				where: {
-					class: voterClass,
+			const dbData = await prisma.user.findMany({
+				select: {
+					id: true,
+					class: true,
+					email: true,
+					enrollment: true,
+					name: true,
 				},
 			});
+
+			const classVoters = await Promise.all(
+				dbData.map(async (item) => {
+					item.enrollment = await decrypt(item.enrollment);
+					item.name = await decrypt(item.name);
+
+					return item;
+				}),
+			);
+
+			console.log(classVoters);
 
 			return reply.status(200).send({
 				data: classVoters,
