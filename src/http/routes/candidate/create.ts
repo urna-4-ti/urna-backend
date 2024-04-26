@@ -10,19 +10,11 @@ import { randomUUID } from "node:crypto";
 
 export async function CreateCandidate(app: FastifyInstance) {
 	app.post("/candidate", async (req, reply) => {
-		// console.log(req.body);
-
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = await req.body;
-		console.log(body);
 
 		const pump = util.promisify(pipeline);
-		const file = {
-			file: body?.photo.file,
-			filename: body?.photo.filename,
-		};
-		// biome-ignore lint/performance/noDelete: <explanation>
-		delete body?.photo;
+		const file = body.photo.toBuffer();
 
 		const fields = {
 			name: body.name.value,
@@ -60,18 +52,20 @@ export async function CreateCandidate(app: FastifyInstance) {
 		}
 
 		try {
-			if (file?.file) {
+			console.log(body.photo.filename);
+
+			if (file) {
+				const uid = randomUUID();
 				await pump(
-					file.file,
-					fs.createWriteStream(`uploads/${randomUUID()}-${file.filename}`),
+					file,
+					fs.createWriteStream(`uploads/${uid}-${body.photo.filename}`),
 				);
-				data.picPath = `uploads/${randomUUID()}-${file.filename}`;
+				data.picPath = `${uid}-${body.photo.filename}`;
 			} else {
 				return reply.status(404).send({
 					message: "File not provided",
 				});
 			}
-			console.log(data);
 			await prisma.candidate.create({
 				data: {
 					cod: data.cod,
