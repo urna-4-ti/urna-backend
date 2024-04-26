@@ -17,6 +17,7 @@ import { CreatePoliticalParty } from "./routes/politicalParty/create";
 import { FindAllPoliticalParty } from "./routes/politicalParty/findAll";
 import { createVoter } from "./routes/voter/create";
 import { getAllVoters } from "./routes/voter/findAll";
+import { getCandidate } from "./routes/candidate/findAll";
 
 const app = fastify();
 
@@ -52,6 +53,7 @@ app.register(fstatic, {
 app.register(signUp);
 app.register(signIn);
 app.register(CreateCandidate);
+app.register(getCandidate);
 app.register(CreateGovernmentForm);
 app.register(FindAllGovernmentForm);
 app.register(CreatePoliticalParty);
