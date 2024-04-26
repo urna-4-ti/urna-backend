@@ -4,6 +4,9 @@ import fCookie from "@fastify/cookie";
 import fastMultipart from "@fastify/multipart";
 import fastify from "fastify";
 import cors from "@fastify/cors";
+import fstatic from "@fastify/static";
+import path from "node:path";
+
 // routes
 import { signUp } from "./routes/auth/signUp";
 import { signIn } from "./routes/auth/login";
@@ -39,6 +42,12 @@ app.register(fCookie, {
 	secret: "some-secret-key",
 	hook: "preHandler",
 });
+app.register(fstatic, {
+	root: path.join(__dirname, "../../uploads"),
+	prefix: "/public/",
+});
+// console.log(path.join(__dirname, "../../uploads"));
+
 // routes
 app.register(signUp);
 app.register(signIn);
