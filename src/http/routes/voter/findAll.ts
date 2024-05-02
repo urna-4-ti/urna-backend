@@ -83,29 +83,21 @@ export async function getVoterId(app: FastifyInstance) {
 			});
 		}
 		try {
-			const dbData = await prisma.user.findMany({
-				select: {
-					id: true,
-					class: true,
-					email: true,
-					enrollment: true,
-					name: true,
-				},
+			const dbData = await prisma.user.findUniqueOrThrow({
 				where: {
 					id: VoterId,
 				}
 			});
 
-			const classVoters = await Promise.all(
-				dbData.map(async (item) => {
-					item.enrollment = await decrypt(item.enrollment);
-					item.name = await decrypt(item.name);
+			const dbDataDecrypted = async () => {
+				dbData.enrollment = await decrypt(dbData.enrollment);
+				dbData.name = await decrypt(dbData.name);
+				return dbData;
+			};
+			
+			const classVoters = await dbDataDecrypted();
 
-					return item;
-				}),
-			);
-
-			console.log(classVoters);
+			console.log("TESTE",classVoters)
 
 			return reply.status(200).send({
 				data: classVoters,
