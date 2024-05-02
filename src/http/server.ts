@@ -16,8 +16,16 @@ import { FindAllGovernmentForm } from "./routes/government/findAll";
 import { CreatePoliticalParty } from "./routes/politicalParty/create";
 import { FindAllPoliticalParty } from "./routes/politicalParty/findAll";
 import { createVoter } from "./routes/voter/create";
-import { getAllVoters } from "./routes/voter/findAll";
-import { getCandidate } from "./routes/candidate/findAll";
+import { getAllVoters, getVoterId } from "./routes/voter/findAll";
+import { EditCandidate } from "./routes/candidate/edit";
+import { FindAllCandidates, FindCandidatesId } from "./routes/candidate/findAll";
+import { EditGovernment } from "./routes/government/edit";
+import { EditPoliticalParty } from "./routes/politicalParty/edit";
+import { EditVoter } from "./routes/voter/edit";
+import { DeleteCandidate } from "./routes/candidate/delete";
+import { DeleteGovernment } from "./routes/government/delete";
+import { DeletePoliticalParty } from "./routes/politicalParty/delete";
+import { DeleteVoter } from "./routes/voter/delete";
 
 const app = fastify();
 
@@ -50,16 +58,36 @@ app.register(fstatic, {
 // console.log(path.join(__dirname, "../../uploads"));
 
 // routes
+
+// auth
 app.register(signUp);
 app.register(signIn);
+// =======================
+// candidate
 app.register(CreateCandidate);
-app.register(getCandidate);
+app.register(EditCandidate);
+app.register(FindAllCandidates);
+app.register(FindCandidatesId)
+app.register(DeleteCandidate);
+// =======================
+// government
 app.register(CreateGovernmentForm);
 app.register(FindAllGovernmentForm);
+app.register(EditGovernment);
+app.register(DeleteGovernment);
+// =======================
+// politicalPaty
 app.register(CreatePoliticalParty);
 app.register(FindAllPoliticalParty);
+app.register(EditPoliticalParty);
+app.register(DeletePoliticalParty);
+// =======================
+// voter
 app.register(createVoter);
 app.register(getAllVoters);
+app.register(EditVoter);
+app.register(DeleteVoter);
+app.register(getVoterId)
 
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
 	console.log("server running", value);
