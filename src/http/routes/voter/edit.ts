@@ -8,7 +8,7 @@ interface RouteParams {
 }
 
 export async function EditVoter(app: FastifyInstance) {
-	app.post<{ Params: RouteParams }>("/voter/:id", async (request, reply) => {
+	app.patch<{ Params: RouteParams }>("/voter/:id", async (request, reply) => {
 		const loginBody = z.object({
 			name: z.string(),
 			email: z.string().email("The field is not email"),
@@ -37,11 +37,13 @@ export async function EditVoter(app: FastifyInstance) {
 				"TA_4",
 				"ADMIN",
 			]),
+			
 		});
 		const { id } = request.params;
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = request.body;
+
 
 		const fields = {
 			email: body.email.value,
@@ -51,6 +53,7 @@ export async function EditVoter(app: FastifyInstance) {
 			role: body.role.value,
 			enrollment: body.enrollment.value,
 		};
+
 
 		try {
 			const data = loginBody.parse(fields);

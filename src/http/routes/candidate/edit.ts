@@ -20,10 +20,7 @@ export async function EditCandidate(app: FastifyInstance) {
 		const body: any = await req.body;
 		const { id } = req.params;
 
-		console.log(body);
-
 		const pump = util.promisify(pipeline);
-		const file = body?.photo.toBuffer();
 
 		const fields = {
 			name: body.name.value,
@@ -55,6 +52,12 @@ export async function EditCandidate(app: FastifyInstance) {
 			return reply.status(403).send({
 				message: "Action not permitted",
 			});
+		}
+
+		let file
+
+		if(body.photo) {
+			file = body.photo.toBuffer()
 		}
 
 		try {
