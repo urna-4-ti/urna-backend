@@ -5,7 +5,7 @@ import { prisma } from "../../../lib/prisma";
 import type { Fields, UserJWTPayload } from "../../../utils/types";
 import fs from "node:fs";
 import util from "node:util";
-import { pipeline } from "node:stream";
+import { pipeline, type PipelineSource } from "node:stream";
 import { randomUUID } from "node:crypto";
 
 interface RouteParams {
@@ -19,6 +19,7 @@ export async function EditCandidate(app: FastifyInstance) {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = await req.body;
 		const { id } = req.params;
+		console.log(id);
 
 		const pump = util.promisify(pipeline);
 
@@ -54,10 +55,10 @@ export async function EditCandidate(app: FastifyInstance) {
 			});
 		}
 
-		let file
+		let file: PipelineSource<File> | null = null;
 
-		if(body.photo) {
-			file = body.photo.toBuffer()
+		if (body.photo) {
+			file = body.photo.toBuffer();
 		}
 
 		try {

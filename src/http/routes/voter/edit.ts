@@ -14,7 +14,7 @@ export async function EditVoter(app: FastifyInstance) {
 			email: z.string().email("The field is not email"),
 			password: z
 				.string()
-				.min(6, "The password must be 10 characters")
+				.min(10, "The password must be 10 characters")
 				.max(10, "The password must be 10 characters"),
 			role: z.enum(["VOTER"]),
 			enrollment: z.string(),
@@ -37,23 +37,20 @@ export async function EditVoter(app: FastifyInstance) {
 				"TA_4",
 				"ADMIN",
 			]),
-			
 		});
 		const { id } = request.params;
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = request.body;
 
-
 		const fields = {
 			email: body.email.value,
-			password: body.password.value,
+			password: body.enrollment.value,
 			name: body.name.value,
 			class: body.class.value,
 			role: body.role.value,
 			enrollment: body.enrollment.value,
 		};
-
 
 		try {
 			const data = loginBody.parse(fields);
