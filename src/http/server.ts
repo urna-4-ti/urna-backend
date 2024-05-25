@@ -14,11 +14,17 @@ import { CreateCandidate } from "./routes/candidate/create";
 import { CreateGovernmentForm } from "./routes/government/create";
 import { FindAllGovernmentForm } from "./routes/government/findAll";
 import { CreatePoliticalParty } from "./routes/politicalParty/create";
-import { FindAllPoliticalParty } from "./routes/politicalParty/findAll";
+import {
+	FindAllPoliticalParty,
+	FindClassPoliticalParty,
+} from "./routes/politicalParty/findAll";
 import { createVoter } from "./routes/voter/create";
 import { getAllVoters, getVoterId } from "./routes/voter/findAll";
 import { EditCandidate } from "./routes/candidate/edit";
-import { FindAllCandidates, FindCandidatesId } from "./routes/candidate/findAll";
+import {
+	FindAllCandidates,
+	FindCandidatesId,
+} from "./routes/candidate/findAll";
 import { EditGovernment } from "./routes/government/edit";
 import { EditPoliticalParty } from "./routes/politicalParty/edit";
 import { EditVoter } from "./routes/voter/edit";
@@ -67,7 +73,7 @@ app.register(signIn);
 app.register(CreateCandidate);
 app.register(EditCandidate);
 app.register(FindAllCandidates);
-app.register(FindCandidatesId)
+app.register(FindCandidatesId);
 app.register(DeleteCandidate);
 // =======================
 // government
@@ -78,7 +84,7 @@ app.register(DeleteGovernment);
 // =======================
 // politicalPaty
 app.register(CreatePoliticalParty);
-app.register(FindAllPoliticalParty);
+app.register(FindClassPoliticalParty);
 app.register(EditPoliticalParty);
 app.register(DeletePoliticalParty);
 // =======================
@@ -87,7 +93,7 @@ app.register(createVoter);
 app.register(getAllVoters);
 app.register(EditVoter);
 app.register(DeleteVoter);
-app.register(getVoterId)
+app.register(getVoterId);
 
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
 	console.log("server running", value);

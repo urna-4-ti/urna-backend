@@ -52,6 +52,8 @@ export async function EditVoter(app: FastifyInstance) {
 			enrollment: body.enrollment.value,
 		};
 
+		console.log(fields.email);
+
 		try {
 			const data = loginBody.parse(fields);
 
