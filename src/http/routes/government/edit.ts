@@ -44,7 +44,7 @@ export async function EditGovernment(app: FastifyInstance) {
 		}
 
 		try {
-			await prisma.government.update({
+			await prisma.politicalType.update({
 				where: {
 					id,
 				},

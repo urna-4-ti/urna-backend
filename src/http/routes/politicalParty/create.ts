@@ -13,7 +13,7 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = await req.body;
 		const pump = util.promisify(pipeline);
-		const file = body?.photo.toBuffer();
+		const file = body.photo.toBuffer();
 
 		const bodyschema = z.object({
 			name: z.string(),
@@ -67,14 +67,15 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 		}
 
 		try {
+			console.log("TESTE", body.photo.filename);
 			if (file) {
+				const uid = randomUUID();
 				await pump(
 					file,
-					fs.createWriteStream(
-						`uploads/${randomUUID()}-${body.photo.filename}`,
-					),
+					fs.createWriteStream(`uploads/${uid}-${body.photo.filename}`),
 				);
-				data.photoUrl = `uploads/${randomUUID()}-${file.filename}`;
+				data.photoUrl = `${uid}-${body.photo.filename}`;
+				console.log("TESTE2", data.photoUrl);
 			} else {
 				return reply.status(404).send({
 					message: "File not provided",

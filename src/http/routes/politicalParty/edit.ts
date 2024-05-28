@@ -5,7 +5,7 @@ import { prisma } from "../../../lib/prisma";
 import type { Fields, UserJWTPayload } from "../../../utils/types";
 import fs from "node:fs";
 import util from "node:util";
-import { pipeline } from "node:stream";
+import { pipeline, type PipelineSource } from "node:stream";
 import { randomUUID } from "node:crypto";
 
 interface RouteParams {
@@ -18,7 +18,6 @@ export async function EditPoliticalParty(app: FastifyInstance) {
 		const body: any = await req.body;
 		const { id } = req.params;
 		const pump = util.promisify(pipeline);
-		const file = body?.photo.toBuffer();
 
 		const bodyschema = z.object({
 			name: z.string(),
@@ -43,7 +42,6 @@ export async function EditPoliticalParty(app: FastifyInstance) {
 			]),
 			politicalTypeId: z.string().uuid(),
 			photoUrl: z.string().optional(),
-			photo: z.string().optional(),
 		});
 
 		const fields = {
@@ -71,6 +69,12 @@ export async function EditPoliticalParty(app: FastifyInstance) {
 			});
 		}
 
+		let file: PipelineSource<File> | null = null;
+
+		if (body.photo) {
+			file = body.photo.toBuffer();
+		}
+
 		try {
 			if (file) {
 				await pump(
@@ -79,7 +83,7 @@ export async function EditPoliticalParty(app: FastifyInstance) {
 						`uploads/${randomUUID()}-${body.photo.filename}`,
 					),
 				);
-				data.photoUrl = `uploads/${randomUUID()}-${file.filename}`;
+				data.photoUrl = `uploads/${randomUUID()}-${body.photo.filename}`;
 				await prisma.politicalParty.update({
 					where: { id },
 					data: {

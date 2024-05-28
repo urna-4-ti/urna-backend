@@ -12,11 +12,15 @@ import { signUp } from "./routes/auth/signUp";
 import { signIn } from "./routes/auth/login";
 import { CreateCandidate } from "./routes/candidate/create";
 import { CreateGovernmentForm } from "./routes/government/create";
-import { FindAllGovernmentForm } from "./routes/government/findAll";
+import {
+	FindAllGovernmentForm,
+	FindGovernmentFormId,
+} from "./routes/government/findAll";
 import { CreatePoliticalParty } from "./routes/politicalParty/create";
 import {
 	FindAllPoliticalParty,
 	FindClassPoliticalParty,
+	FindIdPoliticalParty,
 } from "./routes/politicalParty/findAll";
 import { createVoter } from "./routes/voter/create";
 import { getAllVoters, getVoterId } from "./routes/voter/findAll";
@@ -79,12 +83,15 @@ app.register(DeleteCandidate);
 // government
 app.register(CreateGovernmentForm);
 app.register(FindAllGovernmentForm);
+app.register(FindGovernmentFormId);
 app.register(EditGovernment);
 app.register(DeleteGovernment);
 // =======================
 // politicalPaty
 app.register(CreatePoliticalParty);
 app.register(FindClassPoliticalParty);
+app.register(FindAllPoliticalParty);
+app.register(FindIdPoliticalParty);
 app.register(EditPoliticalParty);
 app.register(DeletePoliticalParty);
 // =======================

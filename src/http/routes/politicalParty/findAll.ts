@@ -8,6 +8,10 @@ interface RouteParams {
 	class: Classes;
 }
 
+interface RouteParamsId {
+	id: string;
+}
+
 export async function FindClassPoliticalParty(app: FastifyInstance) {
 	app.get<{ Params: RouteParams }>("/political/:class", async (req, reply) => {
 		const { access_token } = req.cookies;
@@ -48,6 +52,49 @@ export async function FindClassPoliticalParty(app: FastifyInstance) {
 	});
 }
 
+export async function FindIdPoliticalParty(app: FastifyInstance) {
+	app.get<{ Params: RouteParamsId }>(
+		"/political/unique/:id",
+		async (req, reply) => {
+			const { access_token } = req.cookies;
+			const { id: PoliticalId } = req.params;
+
+			const userJWTData: UserJWTPayload | null = app.jwt.decode(
+				access_token as string,
+			);
+
+			const loggedUser = await prisma.user.findUnique({
+				where: {
+					email: userJWTData?.email,
+				},
+			});
+
+			if (loggedUser?.role !== "ADMIN") {
+				return reply.status(403).send({
+					message: "Action not permitted",
+				});
+			}
+
+			try {
+				const politicalPartys = await prisma.politicalParty.findUniqueOrThrow({
+					where: {
+						id: PoliticalId,
+					},
+				});
+				return reply.status(201).send({
+					politicalPartys: politicalPartys,
+				});
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			} catch (err: any) {
+				return reply.status(403).send({
+					message: err.message,
+					statusCode: 403,
+				});
+			}
+		},
+	);
+}
+
 export async function FindAllPoliticalParty(app: FastifyInstance) {
 	app.get("/political", async (req, reply) => {
 		const { access_token } = req.cookies;
@@ -69,9 +116,17 @@ export async function FindAllPoliticalParty(app: FastifyInstance) {
 		}
 
 		try {
-			const politicalPartys = await prisma.politicalParty.findMany();
+			const politicalPartys = await prisma.politicalParty.findMany({
+				include: {
+					politicalType: {
+						select: {
+							name: true,
+						},
+					},
+				},
+			});
 			return reply.status(201).send({
-				politicalPartys: politicalPartys,
+				data: politicalPartys,
 			});
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {

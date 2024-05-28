@@ -40,7 +40,10 @@ export async function CreateGovernmentForm(app: FastifyInstance) {
 
 		try {
 			await prisma.politicalType.create({
-				data: { ...data },
+				data: {
+					name: data.name,
+					cod: data.cod,
+				},
 			});
 			return reply.status(201).send();
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>

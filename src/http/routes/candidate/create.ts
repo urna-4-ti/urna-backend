@@ -16,6 +16,14 @@ export async function CreateCandidate(app: FastifyInstance) {
 		const pump = util.promisify(pipeline);
 		const file = body.photo.toBuffer();
 
+		const bodyschema = z.object({
+			cod: z.number(),
+			name: z.string(),
+			picPath: z.string().optional(),
+			politicalPartyId: z.string(),
+			description: z.string(),
+		});
+
 		const fields = {
 			name: body.name.value,
 			cod: Number(body.cod.value),
@@ -25,13 +33,6 @@ export async function CreateCandidate(app: FastifyInstance) {
 
 		// console.log(fields);
 
-		const bodyschema = z.object({
-			cod: z.number(),
-			name: z.string(),
-			picPath: z.string().optional(),
-			politicalPartyId: z.string(),
-			description: z.string(),
-		});
 		const data = bodyschema.parse(fields);
 		const { access_token } = req.cookies;
 

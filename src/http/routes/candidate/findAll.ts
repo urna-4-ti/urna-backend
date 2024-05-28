@@ -53,7 +53,7 @@ interface RouteParams {
 export async function FindCandidatesId(app: FastifyInstance) {
 	app.get<{ Params: RouteParams }>("/candidate/:id", async (req, reply) => {
 		const { access_token } = req.cookies;
-		const {id: CandidateId} = req.params
+		const { id: CandidateId } = req.params;
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
 			access_token as string,
@@ -74,7 +74,7 @@ export async function FindCandidatesId(app: FastifyInstance) {
 		try {
 			const candidate = await prisma.candidate.findUniqueOrThrow({
 				where: {
-					id: CandidateId
+					id: CandidateId,
 				},
 				include: {
 					PoliticalParty: {

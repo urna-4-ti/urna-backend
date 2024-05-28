@@ -24,6 +24,9 @@ export async function getAllVoters(app: FastifyInstance) {
 		}
 		try {
 			const dbData = await prisma.user.findMany({
+				where: {
+					role: "VOTER",
+				},
 				select: {
 					id: true,
 					class: true,
@@ -61,11 +64,10 @@ interface RouteParams {
 	id: string;
 }
 
-
 export async function getVoterId(app: FastifyInstance) {
-	app.get<{Params : RouteParams}>("/voter/:id", async (req, reply) => {
+	app.get<{ Params: RouteParams }>("/voter/:id", async (req, reply) => {
 		const { access_token } = req.cookies;
-		const {id: VoterId} = req.params
+		const { id: VoterId } = req.params;
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
 			access_token as string,
@@ -86,7 +88,7 @@ export async function getVoterId(app: FastifyInstance) {
 			const dbData = await prisma.user.findUniqueOrThrow({
 				where: {
 					id: VoterId,
-				}
+				},
 			});
 
 			const dbDataDecrypted = async () => {
@@ -94,10 +96,10 @@ export async function getVoterId(app: FastifyInstance) {
 				dbData.name = await decrypt(dbData.name);
 				return dbData;
 			};
-			
+
 			const classVoters = await dbDataDecrypted();
 
-			console.log("TESTE",classVoters)
+			console.log("TESTE", classVoters);
 
 			return reply.status(200).send({
 				data: classVoters,
