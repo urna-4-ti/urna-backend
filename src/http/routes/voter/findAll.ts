@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
-import { decrypt } from "src/lib/crypto";
-import { prisma } from "src/lib/prisma";
-import type { UserJWTPayload } from "src/utils/types";
+import { decrypt } from "../../../lib/crypto";
+import { prisma } from "../../../lib/prisma";
+import type { UserJWTPayload } from "../../../utils/types";
 
 export async function getAllVoters(app: FastifyInstance) {
 	app.get("/voter", async (req, reply) => {

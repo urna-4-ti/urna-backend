@@ -1,8 +1,7 @@
 import { z } from "zod";
 import { prisma } from "../../../lib/prisma";
 import type { FastifyInstance } from "fastify";
-import { encrypt, hashing } from "src/lib/crypto";
-import { Roles } from "@prisma/client";
+import { encrypt, hashing } from "../../../lib/crypto";
 
 export async function createVoter(app: FastifyInstance) {
 	app.post("/voter", async (request, reply) => {

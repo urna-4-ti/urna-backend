@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { prisma } from "../../../lib/prisma";
 import type { FastifyInstance } from "fastify";
-import { encrypt, hashing } from "src/lib/crypto";
+import { encrypt, hashing } from "../../../lib/crypto";
 
 interface RouteParams {
 	id: string;
