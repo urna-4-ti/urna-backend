@@ -32,7 +32,7 @@ model Candidate {
   picPath          String
   description      String
   politicalPartyId String
-  PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id])
+  PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id], onDelete: Cascade)
 }
 
 model PoliticalType {
@@ -50,7 +50,7 @@ model PoliticalParty {
   politicalTypeId String
   photoUrl        String
 
-  politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id])
+  politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id], onDelete: Cascade)
   candidates    Candidate[]
 }
 

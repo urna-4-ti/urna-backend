@@ -5,24 +5,23 @@ import { prisma } from "../../../lib/prisma";
 import type { Fields, UserJWTPayload } from "../../../utils/types";
 import fs from "node:fs";
 import util from "node:util";
-import { pipeline } from "node:stream";
+import { pipeline, type PipelineSource } from "node:stream";
 import { randomUUID } from "node:crypto";
 
-export async function CreateCandidate(app: FastifyInstance) {
-	app.post("/candidate", async (req, reply) => {
+interface RouteParams {
+	id: string;
+}
+
+export async function EditCandidate(app: FastifyInstance) {
+	app.patch<{
+		Params: RouteParams;
+	}>("/candidate/:id", async (req, reply) => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = await req.body;
+		const { id } = req.params;
+		console.log(id);
 
 		const pump = util.promisify(pipeline);
-		const file = body.photo.toBuffer();
-
-		const bodyschema = z.object({
-			cod: z.number(),
-			name: z.string(),
-			picPath: z.string().optional(),
-			politicalPartyId: z.string(),
-			description: z.string(),
-		});
 
 		const fields = {
 			name: body.name.value,
@@ -30,9 +29,13 @@ export async function CreateCandidate(app: FastifyInstance) {
 			description: body.description.value,
 			politicalPartyId: body.politicalPartyId.value,
 		};
-
-		// console.log(fields);
-
+		const bodyschema = z.object({
+			cod: z.number().optional(),
+			name: z.string().optional(),
+			picPath: z.string().optional().optional(),
+			politicalPartyId: z.string().optional(),
+			description: z.string().optional(),
+		});
 		const data = bodyschema.parse(fields);
 		const { access_token } = req.cookies;
 
@@ -52,9 +55,13 @@ export async function CreateCandidate(app: FastifyInstance) {
 			});
 		}
 
-		try {
-			console.log(body.photo.filename);
+		let file: PipelineSource<File> | null = null;
 
+		if (body.photo) {
+			file = body.photo.toBuffer();
+		}
+
+		try {
 			if (file) {
 				const uid = randomUUID();
 				await pump(
@@ -62,20 +69,34 @@ export async function CreateCandidate(app: FastifyInstance) {
 					fs.createWriteStream(`uploads/${uid}-${body.photo.filename}`),
 				);
 				data.picPath = `${uid}-${body.photo.filename}`;
-			} else {
-				return reply.status(404).send({
-					message: "File not provided",
+
+				await prisma.candidate.update({
+					where: {
+						id,
+					},
+					data: {
+						cod: data.cod,
+						description: data.description,
+						name: data.name,
+						picPath: data.picPath,
+						politicalPartyId: data.politicalPartyId,
+					},
 				});
 			}
-			await prisma.candidate.create({
-				data: {
-					cod: data.cod,
-					description: data.description,
-					name: data.name,
-					picPath: data.picPath,
-					politicalPartyId: data.politicalPartyId,
-				},
-			});
+			if (!data.picPath) {
+				await prisma.candidate.update({
+					where: {
+						id,
+					},
+					data: {
+						cod: data.cod,
+						description: data.description,
+						name: data.name,
+						politicalPartyId: data.politicalPartyId,
+					},
+				});
+			}
+
 			return reply.status(201).send();
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {
