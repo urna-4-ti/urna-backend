@@ -9,7 +9,8 @@ interface RouteParams {
 
 export async function FindAllGovernmentForm(app: FastifyInstance) {
 	app.get("/government/form", async (req, reply) => {
-		const { access_token } = req.cookies;
+		const access_token = req.headers;
+		console.log(access_token);
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
 			access_token as string,

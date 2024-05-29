@@ -35,9 +35,9 @@ export async function FindClassPoliticalParty(app: FastifyInstance) {
 
 		try {
 			const politicalPartys = await prisma.politicalParty.findMany({
-				where: {
-					class: CandidateClass,
-				},
+				// where: {
+				// 	class: CandidateClass,
+				// },
 			});
 			return reply.status(201).send({
 				politicalPartys: politicalPartys,

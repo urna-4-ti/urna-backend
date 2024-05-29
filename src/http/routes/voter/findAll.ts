@@ -5,7 +5,8 @@ import type { UserJWTPayload } from "../../../utils/types";
 
 export async function getAllVoters(app: FastifyInstance) {
 	app.get("/voter", async (req, reply) => {
-		const { access_token } = req.cookies;
+		const access_token = req.headers;
+		console.log(access_token);
 
 		const userJWTData: UserJWTPayload | null = app.jwt.decode(
 			access_token as string,
