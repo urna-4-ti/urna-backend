@@ -9,6 +9,7 @@ export async function CreateGovernmentForm(app: FastifyInstance) {
 		const bodyschema = z.object({
 			cod: z.number(),
 			name: z.string(),
+			description: z.string(),
 		});
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = req.body;
@@ -16,6 +17,7 @@ export async function CreateGovernmentForm(app: FastifyInstance) {
 		const fields = {
 			cod: Number(body.cod.value),
 			name: body.name.value,
+			description: body.description.value,
 		};
 		const data = bodyschema.parse(fields);
 		const { access_token } = req.cookies;
@@ -43,6 +45,7 @@ export async function CreateGovernmentForm(app: FastifyInstance) {
 				data: {
 					name: data.name,
 					cod: data.cod,
+					description: data.description,
 				},
 			});
 			return reply.status(201).send();

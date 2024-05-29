@@ -19,10 +19,12 @@ export async function EditGovernment(app: FastifyInstance) {
 		const fields = {
 			cod: Number(body.cod.value),
 			name: body.name.value,
+			description: body.description.value,
 		};
 		const bodyschema = z.object({
 			cod: z.number(),
 			name: z.string(),
+			description: z.string(),
 		});
 		const data = bodyschema.parse(fields);
 		const { access_token } = req.cookies;
@@ -51,6 +53,7 @@ export async function EditGovernment(app: FastifyInstance) {
 				data: {
 					cod: data.cod,
 					name: data.name,
+					description: data.description,
 				},
 			});
 
