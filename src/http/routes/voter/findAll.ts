@@ -72,13 +72,18 @@ interface RouteParams {
 
 export async function getVoterId(app: FastifyInstance) {
 	app.get<{ Params: RouteParams }>("/voter/:id", async (req, reply) => {
-		const { access_token } = req.cookies;
 		const { id: VoterId } = req.params;
-
-		const userJWTData: UserJWTPayload | null = app.jwt.decode(
-			access_token as string,
-		);
-
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				error: error,
+				message: "Token Missing",
+			});
+		}
 		const loggedUser = await prisma.user.findUnique({
 			where: {
 				email: userJWTData?.email,

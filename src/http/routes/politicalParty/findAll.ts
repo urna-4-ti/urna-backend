@@ -15,6 +15,8 @@ interface RouteParamsId {
 export async function FindClassPoliticalParty(app: FastifyInstance) {
 	app.get<{ Params: RouteParams }>("/political/:class", async (req, reply) => {
 		let userJWTData: UserJWTPayload | null = null;
+		console.log("political rafa");
+
 		try {
 			const authorization = req.headers.authorization;
 			const access_token = authorization?.split("Bearer ")[1];
@@ -61,12 +63,20 @@ export async function FindIdPoliticalParty(app: FastifyInstance) {
 	app.get<{ Params: RouteParamsId }>(
 		"/political/unique/:id",
 		async (req, reply) => {
-			const { access_token } = req.cookies;
-			const { id: PoliticalId } = req.params;
+			console.log("political kaua");
 
-			const userJWTData: UserJWTPayload | null = app.jwt.decode(
-				access_token as string,
-			);
+			const { id: PoliticalId } = req.params;
+			let userJWTData: UserJWTPayload | null = null;
+			try {
+				const authorization = req.headers.authorization;
+				const access_token = authorization?.split("Bearer ")[1];
+				userJWTData = app.jwt.decode(access_token as string);
+			} catch (error) {
+				return reply.status(403).send({
+					error: error,
+					message: "Token Missing",
+				});
+			}
 
 			const loggedUser = await prisma.user.findUnique({
 				where: {
@@ -102,11 +112,21 @@ export async function FindIdPoliticalParty(app: FastifyInstance) {
 
 export async function FindAllPoliticalParty(app: FastifyInstance) {
 	app.get("/political", async (req, reply) => {
-		const { access_token } = req.cookies;
+		console.log("political kaua");
 
-		const userJWTData: UserJWTPayload | null = app.jwt.decode(
-			access_token as string,
-		);
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			console.log(authorization, "\n", access_token);
+
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				error: error,
+				message: "Token Missing",
+			});
+		}
 
 		const loggedUser = await prisma.user.findUnique({
 			where: {
@@ -130,7 +150,7 @@ export async function FindAllPoliticalParty(app: FastifyInstance) {
 					},
 				},
 			});
-			return reply.status(201).send({
+			return reply.status(200).send({
 				data: politicalPartys,
 			});
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
