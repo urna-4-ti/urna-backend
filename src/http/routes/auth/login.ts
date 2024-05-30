@@ -66,7 +66,7 @@ export async function signIn(app: FastifyInstance) {
 		};
 
 		const token = request.jwt.sign(payload);
-		reply.setCookie("access_token", token, {
+		reply.setCookie("token", token, {
 			path: "/",
 			httpOnly: true,
 			secure: true,

@@ -73,7 +73,6 @@ interface RouteParams {
 export async function getVoterId(app: FastifyInstance) {
 	app.get<{ Params: RouteParams }>("/voter/:id", async (req, reply) => {
 		const { id: VoterId } = req.params;
-
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;
@@ -85,7 +84,6 @@ export async function getVoterId(app: FastifyInstance) {
 				message: "Token Missing",
 			});
 		}
-
 		const loggedUser = await prisma.user.findUnique({
 			where: {
 				email: userJWTData?.email,
