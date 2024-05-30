@@ -47,7 +47,7 @@ app.register(cors, {
 });
 
 app.register(fjwt, {
-	secret: "G83W89GASBRIHB$GKOAEQYHhU%Ugaibrei@gsb54abh5rba",
+	secret: process.env.JWT_ASSIGN as string,
 });
 app.register(fastMultipart, {
 	attachFieldsToBody: true,
@@ -59,7 +59,7 @@ app.addHook("preHandler", (req, res, next) => {
 });
 
 app.register(fCookie, {
-	secret: "some-secret-key",
+	secret: process.env.COOKIE_SECRET,
 	hook: "preHandler",
 });
 app.register(fstatic, {

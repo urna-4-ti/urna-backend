@@ -70,6 +70,8 @@ export async function signIn(app: FastifyInstance) {
 			path: "/",
 			httpOnly: true,
 			secure: true,
+			maxAge: 60 * 60 * 24 * 7,
+			domain: "urna-frontend.vercel.app",
 		});
 		return { accessToken: token };
 	});
