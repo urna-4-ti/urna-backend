@@ -8,10 +8,11 @@ interface RouteParams {
 
 export async function DeleteVoter(app: FastifyInstance) {
 	app.delete<{ Params: RouteParams }>("/voter/:id", async (req, reply) => {
-		let userJWTData: UserJWTPayload | null = null;
 		const { id } = req.params;
+		let userJWTData: UserJWTPayload | null = null;
 		try {
-			const { access_token } = req.cookies;
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
 			userJWTData = app.jwt.decode(access_token as string);
 		} catch (error) {
 			return reply.status(403).send({
@@ -19,6 +20,7 @@ export async function DeleteVoter(app: FastifyInstance) {
 				message: "Token Missing",
 			});
 		}
+
 		const loggedUser = await prisma.user.findUnique({
 			where: {
 				email: userJWTData?.email,
