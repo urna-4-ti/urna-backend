@@ -59,6 +59,37 @@ model Government {
   id   String @id @default(uuid())
   cod  Int
   name String
+  Vote Vote[]
+}
+
+model Voting {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+}
+
+model Vote {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  governmentVote Government? @relation(fields: [governmentId], references: [id])
+  governmentId   String?
+
+  politicalRegimeVote PoliticalRegime? @relation(fields: [politicalRegimeId], references: [id])
+  politicalRegimeId   String?
+
+  @@index([id, governmentId, politicalRegimeId])
+}
+
+model PoliticalRegime {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Vote      Vote[]
+
+  @@index([id])
 }
 
 enum Roles {
