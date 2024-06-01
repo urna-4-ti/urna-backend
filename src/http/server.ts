@@ -14,6 +14,10 @@ import { CreatePoliticalParty } from "./routes/politicalParty/create";
 import { FindAllPoliticalParty } from "./routes/politicalParty/findAll";
 import { createVoter } from "./routes/voter/create";
 import { getAllVoters } from "./routes/voter/findAll";
+import { GetPoliticalRegime } from "./routes/politicalRegime/get";
+import { CreatePoliticalRegime } from "./routes/politicalRegime/create";
+import { EditPoliticalRegime } from "./routes/politicalRegime/edit";
+import { DeletePoliticalRegime } from "./routes/politicalRegime/delete";
 
 const app = fastify();
 
@@ -49,6 +53,10 @@ app.register(CreatePoliticalParty);
 app.register(FindAllPoliticalParty);
 app.register(createVoter);
 app.register(getAllVoters);
+app.register(GetPoliticalRegime);
+app.register(CreatePoliticalRegime);
+app.register(EditPoliticalRegime);
+app.register(DeletePoliticalRegime);
 
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
 	console.log("server running", value);

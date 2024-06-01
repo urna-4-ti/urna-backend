@@ -54,6 +54,12 @@ model PoliticalParty {
   candidates    Candidate[]
 }
 
+model PoliticalRegime {
+  id   String  @id @default(uuid())
+  name NamesPR
+  cod  Int     @unique
+}
+
 model Government {
   id   String @id @default(uuid())
   cod  Int
@@ -83,4 +89,10 @@ enum Classes {
   TA_3
   TA_4
   ADMIN
+}
+
+enum NamesPR {
+  Parlamentarismo
+  Presidencialismo
+  SemiPresidencialismo
 }
