@@ -37,8 +37,8 @@ export async function CreateCandidate(app: FastifyInstance) {
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;
-			const { token } = req.cookies;
-			userJWTData = app.jwt.decode(token as string);
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
 		} catch (error) {
 			return reply.status(403).send({
 				error: error,

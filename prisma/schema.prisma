@@ -18,11 +18,14 @@ model User {
   id           String  @id @default(uuid())
   name         String
   role         Roles
-  enrollment   String
+  enrollment   String  @unique
   email        String  @unique
   hashPassword String
   password     String
   class        Classes
+  Vote         Vote[]
+
+  @@index([id, enrollment])
 }
 
 model Candidate {
@@ -33,6 +36,7 @@ model Candidate {
   description      String
   politicalPartyId String
   PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id], onDelete: Cascade)
+  Vote             Vote[]
 }
 
 model PoliticalType {
@@ -55,6 +59,13 @@ model PoliticalParty {
   candidates    Candidate[]
 }
 
+model PoliticalRegime {
+  id   String  @id @default(uuid())
+  name NamesPR
+  cod  Int     @unique
+  Vote Vote[]
+}
+
 model Government {
   id   String @id @default(uuid())
   cod  Int
@@ -67,7 +78,9 @@ model Voting {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name String
+  name  String
+  class Classes
+  votes Vote[]
 }
 
 model Vote {
@@ -80,16 +93,17 @@ model Vote {
   politicalRegimeVote PoliticalRegime? @relation(fields: [politicalRegimeId], references: [id])
   politicalRegimeId   String?
 
-  @@index([id, governmentId, politicalRegimeId])
-}
+  candidateVote Candidate? @relation(fields: [candidateId], references: [id])
+  candidateId   String?
 
-model PoliticalRegime {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Vote      Vote[]
+  class    Classes
+  Voting   Voting  @relation(fields: [votingId], references: [id])
+  votingId String
 
-  @@index([id])
+  user           User   @relation(fields: [userEnrollment], references: [enrollment])
+  userEnrollment String
+
+  @@index([id, governmentId, politicalRegimeId, candidateId])
 }
 
 enum Roles {
@@ -115,4 +129,10 @@ enum Classes {
   TA_3
   TA_4
   ADMIN
+}
+
+enum NamesPR {
+  Parlamentarismo
+  Presidencialismo
+  SemiPresidencialismo
 }
