@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { prisma } from "src/lib/prisma";
-import type { UserJWTPayload } from "src/utils/types";
+import { prisma } from "../../../lib/prisma";
+import type { UserJWTPayload } from "../../../utils/types";
 
 interface RouteParams {
 	id: string;
@@ -10,10 +10,11 @@ export async function DeleteGovernment(app: FastifyInstance) {
 	app.delete<{ Params: RouteParams }>(
 		"/government/form/:id",
 		async (req, reply) => {
-			let userJWTData: UserJWTPayload | null = null;
 			const { id } = req.params;
+			let userJWTData: UserJWTPayload | null = null;
 			try {
-				const { access_token } = req.cookies;
+				const authorization = req.headers.authorization;
+				const access_token = authorization?.split("Bearer ")[1];
 				userJWTData = app.jwt.decode(access_token as string);
 			} catch (error) {
 				return reply.status(403).send({

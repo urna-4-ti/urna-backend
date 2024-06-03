@@ -36,6 +36,14 @@ import { DeleteCandidate } from "./routes/candidate/delete";
 import { DeleteGovernment } from "./routes/government/delete";
 import { DeletePoliticalParty } from "./routes/politicalParty/delete";
 import { DeleteVoter } from "./routes/voter/delete";
+import { CreatePoliticalRegime } from "./routes/politicalRegime/create";
+import { DeletePoliticalRegime } from "./routes/politicalRegime/delete";
+import { EditPoliticalRegime } from "./routes/politicalRegime/edit";
+import { GetPoliticalRegime } from "./routes/politicalRegime/get";
+import { CreateVoting } from "./routes/voting/create";
+import { FindAllVotings } from "./routes/voting/findAll";
+import { FindOneVoting } from "./routes/voting/findOne";
+import { Vote } from "./routes/voting/vote";
 
 const app = fastify();
 
@@ -43,6 +51,7 @@ config();
 app.register(cors, {
 	origin: process.env.FRONTEND_URL,
 	credentials: true,
+	allowedHeaders: ["Authorization"],
 });
 
 app.register(fjwt, {
@@ -65,7 +74,6 @@ app.register(fstatic, {
 	root: path.join(__dirname, "../../uploads"),
 	prefix: "/public/",
 });
-// console.log(path.join(__dirname, "../../uploads"));
 
 // routes
 
@@ -101,7 +109,17 @@ app.register(getAllVoters);
 app.register(EditVoter);
 app.register(DeleteVoter);
 app.register(getVoterId);
+app.register(GetPoliticalRegime);
+app.register(CreatePoliticalRegime);
+app.register(EditPoliticalRegime);
+app.register(DeletePoliticalRegime);
 
+// =======================
+// voting
+app.register(CreateVoting);
+app.register(FindAllVotings);
+app.register(FindOneVoting);
+app.register(Vote);
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
 	console.log("server running", value);
 });

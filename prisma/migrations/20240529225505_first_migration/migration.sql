@@ -35,6 +35,7 @@ CREATE TABLE "PoliticalType" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "cod" INTEGER NOT NULL,
+    "description" TEXT NOT NULL,
 
     CONSTRAINT "PoliticalType_pkey" PRIMARY KEY ("id")
 );
@@ -53,6 +54,8 @@ CREATE TABLE "PoliticalParty" (
 -- CreateTable
 CREATE TABLE "Government" (
     "id" TEXT NOT NULL,
+    "cod" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
 
     CONSTRAINT "Government_pkey" PRIMARY KEY ("id")
 );
@@ -64,13 +67,10 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "Candidate_cod_key" ON "Candidate"("cod");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Candidate_politicalPartyId_key" ON "Candidate"("politicalPartyId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "PoliticalType_cod_key" ON "PoliticalType"("cod");
 
 -- AddForeignKey
-ALTER TABLE "Candidate" ADD CONSTRAINT "Candidate_politicalPartyId_fkey" FOREIGN KEY ("politicalPartyId") REFERENCES "PoliticalParty"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Candidate" ADD CONSTRAINT "Candidate_politicalPartyId_fkey" FOREIGN KEY ("politicalPartyId") REFERENCES "PoliticalParty"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PoliticalParty" ADD CONSTRAINT "PoliticalParty_politicalTypeId_fkey" FOREIGN KEY ("politicalTypeId") REFERENCES "PoliticalType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PoliticalParty" ADD CONSTRAINT "PoliticalParty_politicalTypeId_fkey" FOREIGN KEY ("politicalTypeId") REFERENCES "PoliticalType"("id") ON DELETE CASCADE ON UPDATE CASCADE;

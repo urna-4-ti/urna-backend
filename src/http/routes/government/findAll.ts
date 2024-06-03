@@ -9,25 +9,31 @@ interface RouteParams {
 
 export async function FindAllGovernmentForm(app: FastifyInstance) {
 	app.get("/government/form", async (req, reply) => {
-		const { access_token } = req.cookies;
-
-		const userJWTData: UserJWTPayload | null = app.jwt.decode(
-			access_token as string,
-		);
-
-		const loggedUser = await prisma.user.findUnique({
-			where: {
-				email: userJWTData?.email,
-			},
-		});
-
-		if (loggedUser?.role !== "ADMIN") {
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
 			return reply.status(403).send({
-				message: "Action not permitted",
+				error: error,
+				message: "Token Missing",
 			});
 		}
 
 		try {
+			const loggedUser = await prisma.user.findUnique({
+				where: {
+					email: userJWTData?.email,
+				},
+			});
+
+			if (loggedUser?.role !== "ADMIN") {
+				return reply.status(403).send({
+					message: "Action not permitted",
+				});
+			}
+
 			const governmentForms = await prisma.politicalType.findMany();
 			return reply.status(201).send({
 				governments: governmentForms,

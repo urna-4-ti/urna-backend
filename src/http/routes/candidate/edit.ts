@@ -19,7 +19,6 @@ export async function EditCandidate(app: FastifyInstance) {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = await req.body;
 		const { id } = req.params;
-		console.log(id);
 
 		const pump = util.promisify(pipeline);
 
@@ -37,11 +36,18 @@ export async function EditCandidate(app: FastifyInstance) {
 			description: z.string().optional(),
 		});
 		const data = bodyschema.parse(fields);
-		const { access_token } = req.cookies;
 
-		const userJWTData: UserJWTPayload | null = app.jwt.decode(
-			access_token as string,
-		);
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				error: error,
+				message: "Token Missing",
+			});
+		}
 
 		const loggedUser = await prisma.user.findUnique({
 			where: {
@@ -63,6 +69,16 @@ export async function EditCandidate(app: FastifyInstance) {
 
 		try {
 			if (file) {
+				fs.access("uploads", fs.constants.F_OK, (err) => {
+					if (err) {
+						// Diretório não existe. Criar o diretório.
+						fs.mkdirSync("uploads");
+						console.log("Diretório uploads criado com sucesso.");
+					} else {
+						// Diretório já existe.
+						console.log("Diretório uploads já existe.");
+					}
+				});
 				const uid = randomUUID();
 				await pump(
 					file,

@@ -34,12 +34,17 @@ export async function CreateCandidate(app: FastifyInstance) {
 		// console.log(fields);
 
 		const data = bodyschema.parse(fields);
-		const { access_token } = req.cookies;
-
-		const userJWTData: UserJWTPayload | null = app.jwt.decode(
-			access_token as string,
-		);
-
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				error: error,
+				message: "Token Missing",
+			});
+		}
 		const loggedUser = await prisma.user.findUnique({
 			where: {
 				email: userJWTData?.email,
@@ -53,7 +58,16 @@ export async function CreateCandidate(app: FastifyInstance) {
 		}
 
 		try {
-			console.log(body.photo.filename);
+			fs.access("uploads", fs.constants.F_OK, (err) => {
+				if (err) {
+					// Diretório não existe. Criar o diretório.
+					fs.mkdirSync("uploads");
+					console.log("Diretório uploads criado com sucesso.");
+				} else {
+					// Diretório já existe.
+					console.log("Diretório uploads já existe.");
+				}
+			});
 
 			if (file) {
 				const uid = randomUUID();

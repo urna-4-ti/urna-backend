@@ -1,14 +1,10 @@
+import { Prisma } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
-import { prisma } from "../../../lib/prisma";
-import type { UserJWTPayload } from "../../../utils/types";
+import { prisma } from "src/lib/prisma";
+import type { UserJWTPayload } from "src/utils/types";
 
-interface RouteParams {
-	id: string;
-}
-
-export async function DeleteCandidate(app: FastifyInstance) {
-	app.delete<{ Params: RouteParams }>("/candidate/:id", async (req, reply) => {
-		const { id } = req.params;
+export async function FindAllVotings(app: FastifyInstance) {
+	app.get("/voting", async (req, reply) => {
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;
@@ -17,14 +13,16 @@ export async function DeleteCandidate(app: FastifyInstance) {
 		} catch (error) {
 			return reply.status(403).send({
 				error: error,
-				message: "Token Missing",
+				message: "Missing Token",
 			});
 		}
+
 		const loggedUser = await prisma.user.findUnique({
 			where: {
 				email: userJWTData?.email,
 			},
 		});
+
 		if (loggedUser?.role !== "ADMIN") {
 			return reply.status(403).send({
 				message: "Action not permitted",
@@ -32,16 +30,17 @@ export async function DeleteCandidate(app: FastifyInstance) {
 		}
 
 		try {
-			await prisma.candidate.delete({
-				where: { id },
+			const votings = await prisma.voting.findMany();
+			return reply.send({
+				votings,
 			});
-			return reply.status(204).send();
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		} catch (err: any) {
-			return reply.status(403).send({
-				error: err,
-				message: err.message,
-			});
+		} catch (err) {
+			if (err instanceof Prisma.PrismaClientKnownRequestError) {
+				return reply.status(404).send({
+					...err,
+					status: 404,
+				});
+			}
 		}
 	});
 }

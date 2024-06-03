@@ -63,25 +63,12 @@ export async function signUp(app: FastifyInstance) {
 		const cryptoPassword = await encrypt(data.password);
 		const hashPassword = await hashing(data.password);
 		const cryptoName = await encrypt(data.name);
-		const cryptoEnrollment = await encrypt(data.enrollment);
 
 		if (data.role === Roles.ADMIN) {
 			return reply
 				.status(400)
 				.send({ message: "You cant assing ADMIN role to your account" });
 		}
-		const obj = {
-			data: {
-				email: data.email,
-				name: cryptoName,
-				password: cryptoPassword,
-				hashPassword: hashPassword,
-				class: data.class,
-				enrollment: cryptoEnrollment,
-				role: data.role,
-			},
-		};
-		console.log(obj);
 
 		try {
 			await prisma.user.create({
@@ -91,11 +78,10 @@ export async function signUp(app: FastifyInstance) {
 					password: cryptoPassword,
 					hashPassword: hashPassword,
 					class: data.class,
-					enrollment: cryptoEnrollment,
+					enrollment: data.enrollment,
 					role: data.role,
 				},
 			});
-			console.log("success");
 
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {

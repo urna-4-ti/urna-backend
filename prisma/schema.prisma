@@ -9,20 +9,23 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
   id           String  @id @default(uuid())
   name         String
   role         Roles
-  enrollment   String
+  enrollment   String  @unique
   email        String  @unique
   hashPassword String
   password     String
   class        Classes
+  Vote         Vote[]
+
+  @@index([id, enrollment])
 }
 
 model Candidate {
@@ -33,6 +36,7 @@ model Candidate {
   description      String
   politicalPartyId String
   PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id], onDelete: Cascade)
+  Vote             Vote[]
 }
 
 model PoliticalType {
@@ -55,10 +59,51 @@ model PoliticalParty {
   candidates    Candidate[]
 }
 
+model PoliticalRegime {
+  id   String  @id @default(uuid())
+  name NamesPR
+  cod  Int     @unique
+  Vote Vote[]
+}
+
 model Government {
   id   String @id @default(uuid())
   cod  Int
   name String
+  Vote Vote[]
+}
+
+model Voting {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name  String
+  class Classes
+  votes Vote[]
+}
+
+model Vote {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  governmentVote Government? @relation(fields: [governmentId], references: [id])
+  governmentId   String?
+
+  politicalRegimeVote PoliticalRegime? @relation(fields: [politicalRegimeId], references: [id])
+  politicalRegimeId   String?
+
+  candidateVote Candidate? @relation(fields: [candidateId], references: [id])
+  candidateId   String?
+
+  class    Classes
+  Voting   Voting  @relation(fields: [votingId], references: [id])
+  votingId String
+
+  user           User   @relation(fields: [userEnrollment], references: [enrollment])
+  userEnrollment String
+
+  @@index([id, governmentId, politicalRegimeId, candidateId])
 }
 
 enum Roles {
@@ -84,4 +129,10 @@ enum Classes {
   TA_3
   TA_4
   ADMIN
+}
+
+enum NamesPR {
+  Parlamentarismo
+  Presidencialismo
+  SemiPresidencialismo
 }

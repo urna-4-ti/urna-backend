@@ -27,11 +27,18 @@ export async function EditGovernment(app: FastifyInstance) {
 			description: z.string(),
 		});
 		const data = bodyschema.parse(fields);
-		const { access_token } = req.cookies;
 
-		const userJWTData: UserJWTPayload | null = app.jwt.decode(
-			access_token as string,
-		);
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				error: error,
+				message: "Token Missing",
+			});
+		}
 
 		const loggedUser = await prisma.user.findUnique({
 			where: {
