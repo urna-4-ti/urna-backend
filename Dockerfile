@@ -48,7 +48,8 @@ RUN apt-get update -qq && \
 COPY --from=build /app /app
 
 # Start the server by default, this can be overwritten at runtime
+ENV PORT=4000
 EXPOSE 4000
+CMD ["npm" ,"run" ,"build"]
+CMD ["npm", "run", "start"]
 
-CMD [ "npm", "run","build" ]
-CMD [ "npm", "run","start" ]

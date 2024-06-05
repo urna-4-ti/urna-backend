@@ -1,9 +1,9 @@
 import { Classes, Prisma } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
-import { prisma } from "src/lib/prisma";
-import { parseBody } from "src/utils/parseBody";
-import type { UserJWTPayload } from "src/utils/types";
-import { z, ZodError } from "zod";
+import { prisma } from "../../../lib/prisma";
+import { parseBody } from "../../../utils/parseBody";
+import type { UserJWTPayload } from "../../../utils/types";
+import { z } from "zod";
 
 export async function CreateVoting(app: FastifyInstance) {
 	app.post("/voting", async (req, reply) => {

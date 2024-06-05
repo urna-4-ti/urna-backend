@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
-import { prisma } from "src/lib/prisma";
-import type { UserJWTPayload } from "src/utils/types";
+import { prisma } from "../../../lib/prisma";
+import type { UserJWTPayload } from "../../../utils/types";
 interface RouteParams {
 	id: string;
 }

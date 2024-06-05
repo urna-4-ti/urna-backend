@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for urna-backend on 2024-04-18T09:49:16-03:00
+# fly.toml app configuration file generated for urna-backend-1 on 2024-06-05T15:45:18-03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'urna-backend'
+app = 'urna-backend-1'
 primary_region = 'gig'
 
 [build]
@@ -17,6 +17,6 @@ primary_region = 'gig'
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
+  memory = '512mb'
   cpu_kind = 'shared'
   cpus = 1

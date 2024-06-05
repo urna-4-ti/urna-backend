@@ -1,7 +1,8 @@
-import { Prisma, type User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
-import { prisma } from "src/lib/prisma";
-import { parseBody } from "src/utils/parseBody";
+import { prisma } from "../../../lib/prisma";
+import { parseBody } from "../../../utils/parseBody";
+
 import { z, ZodError } from "zod";
 
 interface RouteParams {
