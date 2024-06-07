@@ -1,15 +1,21 @@
 import type { FastifyInstance } from "fastify";
-import { decrypt } from "src/lib/crypto";
-import { prisma } from "src/lib/prisma";
-import type { UserJWTPayload } from "src/utils/types";
+import { decrypt } from "../../../lib/crypto";
+import { prisma } from "../../../lib/prisma";
+import type { UserJWTPayload } from "../../../utils/types";
 
 export async function getAllVoters(app: FastifyInstance) {
 	app.get("/voter", async (req, reply) => {
-		const { access_token } = req.cookies;
-
-		const userJWTData: UserJWTPayload | null = app.jwt.decode(
-			access_token as string,
-		);
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				error: error,
+				message: "Token Missing",
+			});
+		}
 
 		const loggedUser = await prisma.user.findUnique({
 			where: {
@@ -24,6 +30,9 @@ export async function getAllVoters(app: FastifyInstance) {
 		}
 		try {
 			const dbData = await prisma.user.findMany({
+				where: {
+					role: "VOTER",
+				},
 				select: {
 					id: true,
 					class: true,
@@ -43,6 +52,65 @@ export async function getAllVoters(app: FastifyInstance) {
 			);
 
 			console.log(classVoters);
+
+			return reply.status(200).send({
+				data: classVoters,
+			});
+		} catch (error) {
+			return reply.status(401).send({
+				msg: "An error occuried",
+				error: error,
+			});
+		}
+	});
+}
+
+// FN SOMENTE PEGANDO O ID
+interface RouteParams {
+	id: string;
+}
+
+export async function getVoterId(app: FastifyInstance) {
+	app.get<{ Params: RouteParams }>("/voter/:id", async (req, reply) => {
+		const { id: VoterId } = req.params;
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				error: error,
+				message: "Token Missing",
+			});
+		}
+		const loggedUser = await prisma.user.findUnique({
+			where: {
+				email: userJWTData?.email,
+			},
+		});
+
+		if (loggedUser?.role !== "ADMIN") {
+			return reply.status(403).send({
+				message: "Action not permitted",
+			});
+		}
+		try {
+			const dbData = await prisma.user.findUniqueOrThrow({
+				where: {
+					id: VoterId,
+				},
+			});
+
+			const dbDataDecrypted = async () => {
+				dbData.enrollment = await decrypt(dbData.enrollment);
+				dbData.name = await decrypt(dbData.name);
+				return dbData;
+			};
+
+			const classVoters = await dbDataDecrypted();
+
+			console.log("TESTE", classVoters);
 
 			return reply.status(200).send({
 				data: classVoters,

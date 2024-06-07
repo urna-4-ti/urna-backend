@@ -9,9 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -36,10 +36,15 @@ model Candidate {
   description      String
   politicalPartyId String
   PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id], onDelete: Cascade)
+  PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id], onDelete: Cascade)
   Vote             Vote[]
 }
 
 model PoliticalType {
+  id          String @id @default(uuid())
+  name        String
+  cod         Int    @unique
+  description String
   id          String @id @default(uuid())
   name        String
   cod         Int    @unique
@@ -55,6 +60,7 @@ model PoliticalParty {
   politicalTypeId String
   photoUrl        String
 
+  politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id], onDelete: Cascade)
   politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id], onDelete: Cascade)
   candidates    Candidate[]
 }

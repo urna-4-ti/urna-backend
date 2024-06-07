@@ -4,14 +4,18 @@ import type { FastifyInstance } from "fastify";
 import { encrypt, hashing } from "../../../lib/crypto";
 import type { UserJWTPayload } from "src/utils/types";
 
-export async function createVoter(app: FastifyInstance) {
-	app.post("/voter", async (request, reply) => {
+interface RouteParams {
+	id: string;
+}
+
+export async function EditVoter(app: FastifyInstance) {
+	app.patch<{ Params: RouteParams }>("/voter/:id", async (request, reply) => {
 		const loginBody = z.object({
 			name: z.string(),
 			email: z.string().email("The field is not email"),
 			password: z
 				.string()
-				.min(6, "The password must be 10 characters")
+				.min(10, "The password must be 10 characters")
 				.max(10, "The password must be 10 characters"),
 			role: z.enum(["VOTER"]),
 			enrollment: z.string(),
@@ -35,7 +39,7 @@ export async function createVoter(app: FastifyInstance) {
 				"ADMIN",
 			]),
 		});
-
+		const { id } = request.params;
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = request.headers.authorization;
@@ -53,7 +57,6 @@ export async function createVoter(app: FastifyInstance) {
 				email: userJWTData?.email,
 			},
 		});
-
 		if (loggedUser?.role !== "ADMIN") {
 			return reply.status(403).send({
 				message: "Action not permitted",
@@ -65,12 +68,14 @@ export async function createVoter(app: FastifyInstance) {
 
 		const fields = {
 			email: body.email.value,
-			password: body.password.value,
+			password: body.enrollment.value,
 			name: body.name.value,
 			class: body.class.value,
 			role: body.role.value,
 			enrollment: body.enrollment.value,
 		};
+
+		console.log(fields.email);
 
 		try {
 			const data = loginBody.parse(fields);
@@ -79,7 +84,8 @@ export async function createVoter(app: FastifyInstance) {
 			const hashPassword = await hashing(data.password);
 			const cryptoName = await encrypt(data.name);
 			const cryptoEnrollment = await encrypt(data.enrollment);
-			await prisma.user.create({
+			const updatedVoter = await prisma.user.update({
+				where: { id },
 				data: {
 					email: data.email,
 					name: cryptoName,
@@ -90,7 +96,9 @@ export async function createVoter(app: FastifyInstance) {
 					role: data.role,
 				},
 			});
-			console.log("success");
+			return reply.status(200).send({
+				data: updatedVoter,
+			});
 
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {
@@ -102,7 +110,5 @@ export async function createVoter(app: FastifyInstance) {
 				error: err,
 			});
 		}
-
-		return reply.status(201).send();
 	});
 }

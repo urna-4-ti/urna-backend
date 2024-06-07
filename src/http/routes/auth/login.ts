@@ -3,6 +3,7 @@ import { z } from "zod";
 import { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import { compareHash, decrypt } from "../../../lib/crypto";
+import type { User } from "@prisma/client";
 
 export async function signIn(app: FastifyInstance) {
 	app.post("/auth/signIn", async (request, reply) => {
@@ -24,24 +25,30 @@ export async function signIn(app: FastifyInstance) {
 					"The password must contain at least one of the special characters: #, -, @",
 				),
 		});
-		console.log(request.parts);
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		const body: any = await request.body;
+		const body: any = request.body;
 		const fields = {
 			email: body.email.value,
 			password: body.password.value,
 		};
 
 		const data = loginBody.parse(fields);
-
-		const user = await prisma.user.findUnique({
-			where: {
-				email: data.email,
-			},
-		});
-
-		console.log(user);
+		let user: User | null;
+		try {
+			user = await prisma.user.findUniqueOrThrow({
+				where: {
+					email: data.email,
+				},
+			});
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		} catch (error: any) {
+			console.error(error.message);
+			return reply.status(403).send({
+				error: error,
+				message: "User Not found",
+			});
+		}
 
 		const isMatch =
 			user && (await compareHash(data.password, user.hashPassword));
@@ -59,11 +66,13 @@ export async function signIn(app: FastifyInstance) {
 		};
 
 		const token = request.jwt.sign(payload);
-		reply.setCookie("access_token", token, {
-			path: "/",
-			httpOnly: true,
-			secure: true,
-		});
+		// reply.setCookie("token", token, {
+		// 	path: "/",
+		// 	httpOnly: true,
+		// 	secure: true,
+		// 	maxAge: 60 * 60 * 24 * 7,
+		// 	domain: "urna-frontend.vercel.app",
+		// });
 		return { accessToken: token };
 	});
 }

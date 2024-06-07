@@ -5,24 +5,22 @@ import { prisma } from "../../../lib/prisma";
 import type { Fields, UserJWTPayload } from "../../../utils/types";
 import fs from "node:fs";
 import util from "node:util";
-import { pipeline } from "node:stream";
+import { pipeline, type PipelineSource } from "node:stream";
 import { randomUUID } from "node:crypto";
 
-export async function CreateCandidate(app: FastifyInstance) {
-	app.post("/candidate", async (req, reply) => {
+interface RouteParams {
+	id: string;
+}
+
+export async function EditCandidate(app: FastifyInstance) {
+	app.patch<{
+		Params: RouteParams;
+	}>("/candidate/:id", async (req, reply) => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = await req.body;
+		const { id } = req.params;
 
 		const pump = util.promisify(pipeline);
-		const file = body.photo.toBuffer();
-
-		const bodyschema = z.object({
-			cod: z.number(),
-			name: z.string(),
-			picPath: z.string().optional(),
-			politicalPartyId: z.string(),
-			description: z.string(),
-		});
 
 		const fields = {
 			name: body.name.value,
@@ -30,10 +28,15 @@ export async function CreateCandidate(app: FastifyInstance) {
 			description: body.description.value,
 			politicalPartyId: body.politicalPartyId.value,
 		};
-
-		// console.log(fields);
-
+		const bodyschema = z.object({
+			cod: z.number().optional(),
+			name: z.string().optional(),
+			picPath: z.string().optional().optional(),
+			politicalPartyId: z.string().optional(),
+			description: z.string().optional(),
+		});
 		const data = bodyschema.parse(fields);
+
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;
@@ -45,6 +48,7 @@ export async function CreateCandidate(app: FastifyInstance) {
 				message: "Token Missing",
 			});
 		}
+
 		const loggedUser = await prisma.user.findUnique({
 			where: {
 				email: userJWTData?.email,
@@ -57,39 +61,58 @@ export async function CreateCandidate(app: FastifyInstance) {
 			});
 		}
 
-		try {
-			fs.access("uploads", fs.constants.F_OK, (err) => {
-				if (err) {
-					// Diretório não existe. Criar o diretório.
-					fs.mkdirSync("uploads");
-					console.log("Diretório uploads criado com sucesso.");
-				} else {
-					// Diretório já existe.
-					console.log("Diretório uploads já existe.");
-				}
-			});
+		let file: PipelineSource<File> | null = null;
 
+		if (body.photo) {
+			file = body.photo.toBuffer();
+		}
+
+		try {
 			if (file) {
+				fs.access("uploads", fs.constants.F_OK, (err) => {
+					if (err) {
+						// Diretório não existe. Criar o diretório.
+						fs.mkdirSync("uploads");
+						console.log("Diretório uploads criado com sucesso.");
+					} else {
+						// Diretório já existe.
+						console.log("Diretório uploads já existe.");
+					}
+				});
 				const uid = randomUUID();
 				await pump(
 					file,
 					fs.createWriteStream(`uploads/${uid}-${body.photo.filename}`),
 				);
 				data.picPath = `${uid}-${body.photo.filename}`;
-			} else {
-				return reply.status(404).send({
-					message: "File not provided",
+
+				await prisma.candidate.update({
+					where: {
+						id,
+					},
+					data: {
+						cod: data.cod,
+						description: data.description,
+						name: data.name,
+						picPath: data.picPath,
+						politicalPartyId: data.politicalPartyId,
+					},
 				});
 			}
-			await prisma.candidate.create({
-				data: {
-					cod: data.cod,
-					description: data.description,
-					name: data.name,
-					picPath: data.picPath,
-					politicalPartyId: data.politicalPartyId,
-				},
-			});
+			if (!data.picPath) {
+				await prisma.candidate.update({
+					where: {
+						id,
+					},
+					data: {
+						cod: data.cod,
+						description: data.description,
+						name: data.name,
+						politicalPartyId: data.politicalPartyId,
+					},
+				});
+			}
+
 			return reply.status(201).send();
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {

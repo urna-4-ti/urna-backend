@@ -5,15 +5,19 @@ import { prisma } from "../../../lib/prisma";
 import type { Fields, UserJWTPayload } from "../../../utils/types";
 import fs from "node:fs";
 import util from "node:util";
-import { pipeline } from "node:stream";
+import { pipeline, type PipelineSource } from "node:stream";
 import { randomUUID } from "node:crypto";
 
-export async function CreatePoliticalParty(app: FastifyInstance) {
-	app.post("/political", async (req, reply) => {
+interface RouteParams {
+	id: string;
+}
+
+export async function EditPoliticalParty(app: FastifyInstance) {
+	app.patch<{ Params: RouteParams }>("/political/:id", async (req, reply) => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = await req.body;
+		const { id } = req.params;
 		const pump = util.promisify(pipeline);
-		const file = body.photo.toBuffer();
 
 		const bodyschema = z.object({
 			name: z.string(),
@@ -38,7 +42,6 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 			]),
 			politicalTypeId: z.string().uuid(),
 			photoUrl: z.string().optional(),
-			photo: z.string().optional(),
 		});
 
 		const fields = {
@@ -72,39 +75,52 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 			});
 		}
 
+		let file: PipelineSource<File> | null = null;
+
+		if (body.photo) {
+			file = body.photo.toBuffer();
+		}
+
 		try {
-			fs.access("uploads", fs.constants.F_OK, (err) => {
-				if (err) {
-					// Diretório não existe. Criar o diretório.
-					fs.mkdirSync("uploads");
-					console.log("Diretório uploads criado com sucesso.");
-				} else {
-					// Diretório já existe.
-					console.log("Diretório uploads já existe.");
-				}
-			});
 			if (file) {
-				const uid = randomUUID();
+				fs.access("uploads", fs.constants.F_OK, (err) => {
+					if (err) {
+						// Diretório não existe. Criar o diretório.
+						fs.mkdirSync("uploads");
+						console.log("Diretório uploads criado com sucesso.");
+					} else {
+						// Diretório já existe.
+						console.log("Diretório uploads já existe.");
+					}
+				});
 				await pump(
 					file,
-					fs.createWriteStream(`uploads/${uid}-${body.photo.filename}`),
+					fs.createWriteStream(
+						`uploads/${randomUUID()}-${body.photo.filename}`,
+					),
 				);
-				data.photoUrl = `${uid}-${body.photo.filename}`;
-				console.log("TESTE2", data.photoUrl);
-			} else {
-				return reply.status(404).send({
-					message: "File not provided",
+				data.photoUrl = `uploads/${randomUUID()}-${body.photo.filename}`;
+				await prisma.politicalParty.update({
+					where: { id },
+					data: {
+						class: data.class,
+						name: data.name,
+						photoUrl: data.photoUrl,
+						politicalTypeId: data.politicalTypeId,
+					},
+				});
+			}
+			if (!data.photoUrl) {
+				await prisma.politicalParty.update({
+					where: { id },
+					data: {
+						class: data.class,
+						name: data.name,
+						politicalTypeId: data.politicalTypeId,
+					},
 				});
 			}
 
-			await prisma.politicalParty.create({
-				data: {
-					class: data.class,
-					name: data.name,
-					photoUrl: data.photoUrl,
-					politicalTypeId: data.politicalTypeId,
-				},
-			});
 			return reply.status(201).send();
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {
