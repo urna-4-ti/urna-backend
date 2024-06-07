@@ -1,0 +1,112 @@
+import { Classes, Prisma } from "@prisma/client";
+import type { FastifyInstance } from "fastify";
+import { prisma } from "../../../lib/prisma";
+import type { UserJWTPayload } from "../../../utils/types";
+import { z } from "zod";
+
+export async function SearchVotings(app: FastifyInstance) {
+    app.get("/searchVotings", async (req, reply) => {
+        let userJWTData: UserJWTPayload | null = null;
+        try {
+            const authorization = req.headers.authorization;
+            const access_token = authorization?.split("Bearer ")[1];
+            userJWTData = app.jwt.decode(access_token as string);
+        } catch (error) {
+            return reply.status(403).send({
+                error: error,
+                message: "Missing Token",
+            });
+        }
+
+        const loggedUser = await prisma.user.findUnique({
+            where: {
+                email: userJWTData?.email,
+            },
+        });
+
+        if (loggedUser?.role !== "ADMIN") {
+            return reply.status(403).send({
+                message: "Action not permitted",
+            });
+        }
+
+        const querySchema = z.object({
+            name: z.string().optional(),
+            startDate: z.string().optional(),
+            endDate: z.string().optional(),
+        });
+
+        const query = querySchema.parse(req.query);
+
+        const filters = {
+            name: query.name ? { contains: query.name } : undefined,
+            createdAt: query.startDate || query.endDate ? {
+                gte: query.startDate ? new Date(query.startDate) : undefined,
+                lte: query.endDate ? new Date(query.endDate) : undefined,
+            } : undefined,
+        };
+
+        try {
+            const votings = await prisma.voting.findMany({
+                where: filters,
+                include: {
+                    votes: {
+                        include: {
+                            governmentVote: true,
+                            politicalRegimeVote: true,
+                            candidateVote: true,
+                        },
+                    },
+                },
+            });
+
+            const response = votings.map(voting => {
+                const governmentVotes = voting.votes.reduce((acc, vote) => {
+                    if (vote.governmentVote) {
+                        acc[vote.governmentVote.name] = (acc[vote.governmentVote.name] || 0) + 1;
+                    }
+                    return acc;
+                }, {});
+
+                const regimeVotes = voting.votes.reduce((acc, vote) => {
+                    if (vote.politicalRegimeVote) {
+                        acc[vote.politicalRegimeVote.name] = (acc[vote.politicalRegimeVote.name] || 0) + 1;
+                    }
+                    return acc;
+                }, {});
+
+                const winnerCandidate = voting.votes.reduce((acc, vote) => {
+                    if (vote.candidateVote) {
+                        acc[vote.candidateVote.name] = (acc[vote.candidateVote.name] || 0) + 1;
+                    }
+                    return acc;
+                }, {});
+
+                return {
+                    votingName: voting.name,
+                    winnerCandidate: Object.keys(winnerCandidate).reduce((a, b) => winnerCandidate[a] > winnerCandidate[b] ? a : b, "No votes"),
+                    governmentVotes,
+                    regimeVotes,
+                    president: Object.keys(winnerCandidate).reduce((a, b) => winnerCandidate[a] > winnerCandidate[b] ? a : b, "No votes"),
+                    parliamentMembers: Object.keys(winnerCandidate).filter(candidate => candidate !== "No votes"),
+                };
+            });
+
+            return reply.status(200).send(response);
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return reply.status(404).send({
+                    message: "Data in invalid format",
+                    status: 404,
+                    apiResponse: error.errors[0],
+                });
+            }
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                return reply.status(404).send({
+                    ...error,
+                });
+            }
+        }
+    });
+}
+

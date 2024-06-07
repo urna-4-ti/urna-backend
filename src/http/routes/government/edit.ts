@@ -2,25 +2,32 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../../../lib/prisma";
-import type { Fields, UserJWTPayload } from "../../../utils/types";
+import type { UserJWTPayload } from "../../../utils/types";
+import fs from "node:fs";
 
-export async function CreateGovernmentForm(app: FastifyInstance) {
-	app.post("/government/form", async (req, reply) => {
-		const bodyschema = z.object({
-			cod: z.number(),
-			name: z.string(),
-			description: z.string(),
-		});
+interface RouteParams {
+	id: string;
+}
+
+export async function EditGovernment(app: FastifyInstance) {
+	app.patch<{
+		Params: RouteParams;
+	}>("/government/form/:id", async (req, reply) => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		const body: any = req.body;
-		console.log(body);
-
+		const body: any = await req.body;
+		const { id } = req.params;
 		const fields = {
 			cod: Number(body.cod.value),
 			name: body.name.value,
 			description: body.description.value,
 		};
+		const bodyschema = z.object({
+			cod: z.number(),
+			name: z.string(),
+			description: z.string(),
+		});
 		const data = bodyschema.parse(fields);
+
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;
@@ -39,8 +46,6 @@ export async function CreateGovernmentForm(app: FastifyInstance) {
 			},
 		});
 
-		console.log(loggedUser);
-
 		if (loggedUser?.role !== "ADMIN") {
 			return reply.status(403).send({
 				message: "Action not permitted",
@@ -48,13 +53,17 @@ export async function CreateGovernmentForm(app: FastifyInstance) {
 		}
 
 		try {
-			await prisma.politicalType.create({
+			await prisma.politicalType.update({
+				where: {
+					id,
+				},
 				data: {
-					name: data.name,
 					cod: data.cod,
+					name: data.name,
 					description: data.description,
 				},
 			});
+
 			return reply.status(201).send();
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {
