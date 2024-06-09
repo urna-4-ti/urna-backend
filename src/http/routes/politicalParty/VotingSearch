@@ -38,7 +38,7 @@ export async function SearchVotings(app: FastifyInstance) {
 
         const query = querySchema.parse(req.query);
 
-        const filters = {
+        const filters: Prisma.VotingWhereInput = {
             name: query.name ? { contains: query.name } : undefined,
             createdAt: query.startDate || query.endDate ? {
                 gte: query.startDate ? new Date(query.startDate) : undefined,

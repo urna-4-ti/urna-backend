@@ -36,15 +36,10 @@ model Candidate {
   description      String
   politicalPartyId String
   PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id], onDelete: Cascade)
-  PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id], onDelete: Cascade)
   Vote             Vote[]
 }
 
 model PoliticalType {
-  id          String @id @default(uuid())
-  name        String
-  cod         Int    @unique
-  description String
   id          String @id @default(uuid())
   name        String
   cod         Int    @unique
@@ -60,7 +55,6 @@ model PoliticalParty {
   politicalTypeId String
   photoUrl        String
 
-  politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id], onDelete: Cascade)
   politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id], onDelete: Cascade)
   candidates    Candidate[]
 }
@@ -125,7 +119,7 @@ enum Classes {
   TQ_1
   TQ_2
   TQ_3
-  TQ_4
+  TQ_4c
   TMA_1
   TMA_2
   TMA_3
