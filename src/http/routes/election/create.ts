@@ -31,59 +31,64 @@ export async function CreateElection(app: FastifyInstance) {
 			});
 		}
 
-		const bodySchema = z.object({
-			name: z.string(),
-			class: z.enum([
-				"TI_1",
-				"TI_2",
-				"TI_3",
-				"TI_4",
-				"TQ_1",
-				"TQ_2",
-				"TQ_3",
-				"TQ_4",
-				"TMA_1",
-				"TMA_2",
-				"TMA_3",
-				"TMA_4",
-				"TA_1",
-				"TA_2",
-				"TA_3",
-				"TA_4",
-			]),
-			candidates: z.string().array(),
-			politicalRegimes: z.string().array(),
-			governmentSystems: z.string().array(),
-		});
-		// .refine((data) => {
-		// 	const hasPoliticalRegime = data.politicalRegimes;
-		// 	const hasGovernment = data.governmentSystems;
-		// 	const hasCandidate = data.candidates;
+		const bodySchema = z
+			.object({
+				name: z.string(),
+				class: z.enum([
+					"TI_1",
+					"TI_2",
+					"TI_3",
+					"TI_4",
+					"TQ_1",
+					"TQ_2",
+					"TQ_3",
+					"TQ_4",
+					"TMA_1",
+					"TMA_2",
+					"TMA_3",
+					"TMA_4",
+					"TA_1",
+					"TA_2",
+					"TA_3",
+					"TA_4",
+				]),
+				candidates: z.string().array().optional(),
+				politicalRegimes: z.string().array().optional(),
+				governmentSystems: z.string().array().optional(),
+			})
+			.refine((data) => {
+				const hasPoliticalRegime = data.politicalRegimes;
+				const hasGovernment = data.governmentSystems;
+				const hasCandidate = data.candidates;
 
-		// 	if (!hasCandidate && !hasGovernment && !hasPoliticalRegime) {
-		// 		return false;
-		// 	}
-		// 	return true;
-		// });
+				if (!hasCandidate && !hasGovernment && !hasPoliticalRegime) {
+					return false;
+				}
+				return true;
+			});
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = req.body;
+
 		const fields = parseBody(body);
+		console.log(fields);
 
 		try {
 			const data = bodySchema.parse(fields);
+			console.log(data.candidates);
+
 			if (data) {
 				await prisma.election.create({
 					data: {
 						...data,
 						candidates: {
-							connect: data.candidates.map((id) => ({ id })),
+							connect: data.candidates?.map((id) => ({ id })),
 						},
 						governmentSystem: {
-							connect: data.governmentSystems.map((id) => ({ id })),
+							connect: data.governmentSystems?.map((id) => ({ id })),
 						},
 						politicalRegimes: {
-							connect: data.politicalRegimes.map((id) => ({ id })),
+							connect: data.politicalRegimes?.map((id) => ({ id })),
 						},
 					},
 				});

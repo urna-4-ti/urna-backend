@@ -40,6 +40,11 @@ export async function FindOneElection(app: FastifyInstance) {
 					where: {
 						id,
 					},
+					include: {
+						candidates: true,
+						governmentSystem: true,
+						politicalRegimes: true,
+					},
 				}),
 				prisma.vote.findMany({
 					distinct: ["candidateId", "governmentId", "politicalRegimeId"],
