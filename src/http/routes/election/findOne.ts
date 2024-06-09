@@ -6,8 +6,8 @@ interface RouteParams {
 	id: string;
 }
 
-export async function FindOneVoting(app: FastifyInstance) {
-	app.get<{ Params: RouteParams }>("/voting/:id", async (req, reply) => {
+export async function FindOneElection(app: FastifyInstance) {
+	app.get<{ Params: RouteParams }>("/election/:id", async (req, reply) => {
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;
@@ -36,7 +36,7 @@ export async function FindOneVoting(app: FastifyInstance) {
 
 		try {
 			const [voting, allVotes] = await prisma.$transaction([
-				prisma.voting.findUniqueOrThrow({
+				prisma.election.findUniqueOrThrow({
 					where: {
 						id,
 					},
@@ -51,7 +51,7 @@ export async function FindOneVoting(app: FastifyInstance) {
 									select: {
 										Vote: {
 											where: {
-												votingId: id,
+												electionId: id,
 											},
 										},
 									},

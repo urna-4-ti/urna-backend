@@ -40,16 +40,17 @@ import { CreatePoliticalRegime } from "./routes/politicalRegime/create";
 import { DeletePoliticalRegime } from "./routes/politicalRegime/delete";
 import { EditPoliticalRegime } from "./routes/politicalRegime/edit";
 import { GetPoliticalRegime } from "./routes/politicalRegime/get";
-import { CreateVoting } from "./routes/voting/create";
-import { FindAllVotings } from "./routes/voting/findAll";
-import { FindOneVoting } from "./routes/voting/findOne";
-import { Vote } from "./routes/voting/vote";
+import { FindAllElections } from "./routes/election/findAll";
+import { FindOneElection } from "./routes/election/findOne";
+import { Vote } from "./routes/election/vote";
+import { CreateElection } from "./routes/election/create";
 
 const app = fastify();
 
 config();
+
 app.register(cors, {
-	origin: process.env.FRONTEND_URL,
+	origin: process.env.FRONTEND_URL ?? "https://ifurna.vercel.app",
 	credentials: true,
 	allowedHeaders: ["Authorization"],
 });
@@ -116,10 +117,11 @@ app.register(DeletePoliticalRegime);
 
 // =======================
 // voting
-app.register(CreateVoting);
-app.register(FindAllVotings);
-app.register(FindOneVoting);
+app.register(CreateElection);
+app.register(FindAllElections);
+app.register(FindOneElection);
 app.register(Vote);
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
-	console.log("server running", value);
+	console.log("teste", process.env.FRONTEND_URL);
+	console.log("server running TESTEEEEEEEEEEEEEEEEEEEEEEE", value);
 });

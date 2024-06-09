@@ -5,8 +5,8 @@ import { parseBody } from "../../../utils/parseBody";
 import type { UserJWTPayload } from "../../../utils/types";
 import { z } from "zod";
 
-export async function CreateVoting(app: FastifyInstance) {
-	app.post("/voting", async (req, reply) => {
+export async function CreateElection(app: FastifyInstance) {
+	app.post("/election", async (req, reply) => {
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;
@@ -51,7 +51,20 @@ export async function CreateVoting(app: FastifyInstance) {
 				"TA_3",
 				"TA_4",
 			]),
+			candidates: z.string().array(),
+			politicalRegimes: z.string().array(),
+			governmentSystems: z.string().array(),
 		});
+		// .refine((data) => {
+		// 	const hasPoliticalRegime = data.politicalRegimes;
+		// 	const hasGovernment = data.governmentSystems;
+		// 	const hasCandidate = data.candidates;
+
+		// 	if (!hasCandidate && !hasGovernment && !hasPoliticalRegime) {
+		// 		return false;
+		// 	}
+		// 	return true;
+		// });
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = req.body;
@@ -60,8 +73,19 @@ export async function CreateVoting(app: FastifyInstance) {
 		try {
 			const data = bodySchema.parse(fields);
 			if (data) {
-				await prisma.voting.create({
-					data,
+				await prisma.election.create({
+					data: {
+						...data,
+						candidates: {
+							connect: data.candidates.map((id) => ({ id })),
+						},
+						governmentSystem: {
+							connect: data.governmentSystems.map((id) => ({ id })),
+						},
+						politicalRegimes: {
+							connect: data.politicalRegimes.map((id) => ({ id })),
+						},
+					},
 				});
 			}
 

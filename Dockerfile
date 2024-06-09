@@ -51,5 +51,6 @@ COPY --from=build /app /app
 ENV PORT=4000
 EXPOSE 4000
 CMD ["npm" ,"run" ,"build"]
+RUN echo "build!"
 CMD ["npm", "run", "start"]
 

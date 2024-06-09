@@ -37,6 +37,8 @@ model Candidate {
   politicalPartyId String
   PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id], onDelete: Cascade)
   Vote             Vote[]
+  Election         Election?      @relation(fields: [electionId], references: [id])
+  electionId       String?
 }
 
 model PoliticalType {
@@ -60,26 +62,35 @@ model PoliticalParty {
 }
 
 model PoliticalRegime {
-  id   String  @id @default(uuid())
-  name NamesPR
-  cod  Int     @unique
-  Vote Vote[]
+  id         String    @id @default(uuid())
+  name       NamesPR
+  cod        Int       @unique
+  Vote       Vote[]
+  Election   Election? @relation(fields: [electionId], references: [id])
+  electionId String?
 }
 
 model Government {
-  id   String @id @default(uuid())
-  cod  Int
-  name String
-  Vote Vote[]
+  id         String    @id @default(uuid())
+  cod        Int
+  name       String
+  Vote       Vote[]
+  Election   Election? @relation(fields: [electionId], references: [id])
+  electionId String?
 }
 
-model Voting {
+model Election {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   name  String
   class Classes
+
+  candidates       Candidate[]
+  politicalRegimes PoliticalRegime[]
+  governmentSystem Government[]
+
   votes Vote[]
 }
 
@@ -87,20 +98,20 @@ model Vote {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
 
-  governmentVote Government? @relation(fields: [governmentId], references: [id])
+  governmentVote Government? @relation(fields: [governmentId], references: [id], onDelete: Cascade)
   governmentId   String?
 
-  politicalRegimeVote PoliticalRegime? @relation(fields: [politicalRegimeId], references: [id])
+  politicalRegimeVote PoliticalRegime? @relation(fields: [politicalRegimeId], references: [id], onDelete: Cascade)
   politicalRegimeId   String?
 
-  candidateVote Candidate? @relation(fields: [candidateId], references: [id])
+  candidateVote Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   candidateId   String?
 
-  class    Classes
-  Voting   Voting  @relation(fields: [votingId], references: [id])
-  votingId String
+  class      Classes
+  election   Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  electionId String
 
-  user           User   @relation(fields: [userEnrollment], references: [enrollment])
+  user           User   @relation(fields: [userEnrollment], references: [enrollment], onDelete: Cascade)
   userEnrollment String
 
   @@index([id, governmentId, politicalRegimeId, candidateId])

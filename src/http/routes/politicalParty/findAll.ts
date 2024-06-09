@@ -2,7 +2,7 @@
 import { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import type { UserJWTPayload } from "../../../utils/types";
-import type { Classes } from "@prisma/client";
+import { Prisma, type Classes } from "@prisma/client";
 
 interface RouteParams {
 	class: Classes;
@@ -14,6 +14,8 @@ interface RouteParamsId {
 
 export async function FindClassPoliticalParty(app: FastifyInstance) {
 	app.get<{ Params: RouteParams }>("/political/:class", async (req, reply) => {
+		console.log("political 1");
+
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;
@@ -61,19 +63,26 @@ export async function FindIdPoliticalParty(app: FastifyInstance) {
 	app.get<{ Params: RouteParamsId }>(
 		"/political/unique/:id",
 		async (req, reply) => {
-			const { access_token } = req.cookies;
-			const { id: PoliticalId } = req.params;
+			console.log("political 2");
 
-			const userJWTData: UserJWTPayload | null = app.jwt.decode(
-				access_token as string,
-			);
+			const { id: PoliticalId } = req.params;
+			let userJWTData: UserJWTPayload | null = null;
+			try {
+				const authorization = req.headers.authorization;
+				const access_token = authorization?.split("Bearer ")[1];
+				userJWTData = app.jwt.decode(access_token as string);
+			} catch (error) {
+				return reply.status(403).send({
+					error: error,
+					message: "Token Missing",
+				});
+			}
 
 			const loggedUser = await prisma.user.findUnique({
 				where: {
 					email: userJWTData?.email,
 				},
 			});
-
 			if (loggedUser?.role !== "ADMIN") {
 				return reply.status(403).send({
 					message: "Action not permitted",
@@ -102,21 +111,42 @@ export async function FindIdPoliticalParty(app: FastifyInstance) {
 
 export async function FindAllPoliticalParty(app: FastifyInstance) {
 	app.get("/political", async (req, reply) => {
-		const { access_token } = req.cookies;
+		console.log("political 3");
 
-		const userJWTData: UserJWTPayload | null = app.jwt.decode(
-			access_token as string,
-		);
-
-		const loggedUser = await prisma.user.findUnique({
-			where: {
-				email: userJWTData?.email,
-			},
-		});
-
-		if (loggedUser?.role !== "ADMIN") {
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
 			return reply.status(403).send({
-				message: "Action not permitted",
+				error: error,
+				message: "Token Missing",
+			});
+		}
+
+		try {
+			const loggedUser = await prisma.user.findUnique({
+				where: {
+					email: userJWTData?.email,
+				},
+			});
+			if (loggedUser?.role !== "ADMIN") {
+				return reply.status(403).send({
+					message: "Action not permitted",
+				});
+			}
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				return reply.status(400).send({
+					...error,
+					message: error.message,
+					statusCode: 400,
+				});
+			}
+			return reply.status(400).send({
+				error: error,
+				status: 400,
 			});
 		}
 

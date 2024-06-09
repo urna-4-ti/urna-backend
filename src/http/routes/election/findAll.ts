@@ -3,8 +3,8 @@ import type { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import type { UserJWTPayload } from "../../../utils/types";
 
-export async function FindAllVotings(app: FastifyInstance) {
-	app.get("/voting", async (req, reply) => {
+export async function FindAllElections(app: FastifyInstance) {
+	app.get("/election", async (req, reply) => {
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;
@@ -30,7 +30,7 @@ export async function FindAllVotings(app: FastifyInstance) {
 		}
 
 		try {
-			const votings = await prisma.voting.findMany();
+			const votings = await prisma.election.findMany();
 			return reply.send({
 				votings,
 			});
