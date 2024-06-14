@@ -1,10 +1,10 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { decrypt } from "../../../lib/crypto";
 import { prisma } from "../../../lib/prisma";
 import type { UserJWTPayload } from "../../../utils/types";
 
 export async function getAllVoters(app: FastifyInstance) {
-	app.get("/voter", async (req, reply) => {
+	app.get("/voter", async (req: FastifyRequest, reply: FastifyReply) => {
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;

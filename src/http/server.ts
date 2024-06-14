@@ -2,7 +2,7 @@ import fjwt from "@fastify/jwt";
 import { config } from "dotenv";
 import fCookie from "@fastify/cookie";
 import fastMultipart from "@fastify/multipart";
-import fastify from "fastify";
+import fastify, { FastifyReply } from "fastify";
 import cors from "@fastify/cors";
 import fstatic from "@fastify/static";
 import path from "node:path";
