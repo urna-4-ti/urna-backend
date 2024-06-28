@@ -1,8 +1,8 @@
-import { Prisma, type User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
-import { prisma } from "src/lib/prisma";
-import { parseBody } from "src/utils/parseBody";
-import { z, ZodError } from "zod";
+import { prisma } from "../../../lib/prisma";
+import { parseBody } from "../../../utils/parseBody";
+import { z } from "zod";
 
 interface RouteParams {
 	id: string;
@@ -28,7 +28,7 @@ export async function Vote(app: FastifyInstance) {
 				return true;
 			});
 
-		const { id: votingId } = req.params;
+		const { id: electionId } = req.params;
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = req.body;
@@ -53,7 +53,7 @@ export async function Vote(app: FastifyInstance) {
 					...data,
 					class: voter.class,
 					userEnrollment: data.userEnrollment,
-					votingId,
+					electionId,
 				},
 			});
 

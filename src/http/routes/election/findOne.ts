@@ -1,13 +1,13 @@
 import { Prisma } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
-import { prisma } from "src/lib/prisma";
-import type { UserJWTPayload } from "src/utils/types";
+import { prisma } from "../../../lib/prisma";
+import type { UserJWTPayload } from "../../../utils/types";
 interface RouteParams {
 	id: string;
 }
 
-export async function FindOneVoting(app: FastifyInstance) {
-	app.get<{ Params: RouteParams }>("/voting/:id", async (req, reply) => {
+export async function FindOneElection(app: FastifyInstance) {
+	app.get<{ Params: RouteParams }>("/election/:id", async (req, reply) => {
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;
@@ -36,9 +36,14 @@ export async function FindOneVoting(app: FastifyInstance) {
 
 		try {
 			const [voting, allVotes] = await prisma.$transaction([
-				prisma.voting.findUniqueOrThrow({
+				prisma.election.findUniqueOrThrow({
 					where: {
 						id,
+					},
+					include: {
+						candidates: true,
+						governmentSystem: true,
+						politicalRegimes: true,
 					},
 				}),
 				prisma.vote.findMany({
@@ -51,7 +56,7 @@ export async function FindOneVoting(app: FastifyInstance) {
 									select: {
 										Vote: {
 											where: {
-												votingId: id,
+												electionId: id,
 											},
 										},
 									},
