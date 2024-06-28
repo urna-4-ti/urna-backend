@@ -56,7 +56,7 @@ app.register(cors, {
 });
 
 app.register(fjwt, {
-	secret: process.env.JWT_ASSIGN ?? "a",
+	secret: process.env.JWT_ASSIGN || "secret-key",
 });
 app.register(fastMultipart, {
 	attachFieldsToBody: true,
@@ -121,7 +121,9 @@ app.register(CreateElection);
 app.register(FindAllElections);
 app.register(FindOneElection);
 app.register(Vote);
+
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
-	console.log("teste", process.env.FRONTEND_URL);
-	console.log("server running TESTEEEEEEEEEEEEEEEEEEEEEEE", value);
+	console.log("front-url", process.env.FRONTEND_URL);
+
+	console.log("server running", value);
 });

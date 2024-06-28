@@ -48,7 +48,7 @@ export async function EditVoter(app: FastifyInstance) {
 		} catch (error) {
 			return reply.status(403).send({
 				error: error,
-				message: "Token Missing",
+				message: "Missing Token",
 			});
 		}
 
