@@ -52,12 +52,22 @@ export async function FindGovernmentFormId(app: FastifyInstance) {
 	app.get<{ Params: RouteParams }>(
 		"/government/form/:id",
 		async (req, reply) => {
-			const { access_token } = req.cookies;
 			const { id: governmentId } = req.params;
-
-			const userJWTData: UserJWTPayload | null = app.jwt.decode(
-				access_token as string,
+			console.log(
+				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa find one government",
 			);
+
+			let userJWTData: UserJWTPayload | null = null;
+			try {
+				const authorization = req.headers.authorization;
+				const access_token = authorization?.split("Bearer ")[1];
+				userJWTData = app.jwt.decode(access_token as string);
+			} catch (error) {
+				return reply.status(403).send({
+					error: error,
+					message: "Token Missing",
+				});
+			}
 
 			const loggedUser = await prisma.user.findUnique({
 				where: {
