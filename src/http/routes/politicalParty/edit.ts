@@ -81,18 +81,13 @@ export async function EditPoliticalParty(app: FastifyInstance) {
 			file = body.photo.toBuffer();
 		}
 
+		fs.access("uploads", fs.constants.F_OK, (err) => {
+			if (err) {
+				fs.mkdirSync("uploads");
+			}
+		});
 		try {
 			if (file) {
-				fs.access("uploads", fs.constants.F_OK, (err) => {
-					if (err) {
-						// Diretório não existe. Criar o diretório.
-						fs.mkdirSync("uploads");
-						console.log("Diretório uploads criado com sucesso.");
-					} else {
-						// Diretório já existe.
-						console.log("Diretório uploads já existe.");
-					}
-				});
 				await pump(
 					file,
 					fs.createWriteStream(

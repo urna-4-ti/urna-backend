@@ -71,17 +71,12 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 			});
 		}
 
+		fs.access("uploads", fs.constants.F_OK, (err) => {
+			if (err) {
+				fs.mkdirSync("uploads");
+			}
+		});
 		try {
-			fs.access("uploads", fs.constants.F_OK, (err) => {
-				if (err) {
-					// Diretório não existe. Criar o diretório.
-					fs.mkdirSync("uploads");
-					console.log("Diretório uploads criado com sucesso.");
-				} else {
-					// Diretório já existe.
-					console.log("Diretório uploads já existe.");
-				}
-			});
 			if (file) {
 				const uid = randomUUID();
 				await pump(

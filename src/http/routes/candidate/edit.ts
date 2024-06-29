@@ -66,19 +66,15 @@ export async function EditCandidate(app: FastifyInstance) {
 		if (body.photo) {
 			file = body.photo.toBuffer();
 		}
+		fs.access("uploads", fs.constants.F_OK, (err) => {
+			if (err) {
+				// Diretório não existe. Criar o diretório.
+				fs.mkdirSync("uploads");
+			}
+		});
 
 		try {
 			if (file) {
-				fs.access("uploads", fs.constants.F_OK, (err) => {
-					if (err) {
-						// Diretório não existe. Criar o diretório.
-						fs.mkdirSync("uploads");
-						console.log("Diretório uploads criado com sucesso.");
-					} else {
-						// Diretório já existe.
-						console.log("Diretório uploads já existe.");
-					}
-				});
 				const uid = randomUUID();
 				await pump(
 					file,

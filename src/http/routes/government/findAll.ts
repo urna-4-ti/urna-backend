@@ -53,6 +53,10 @@ export async function FindGovernmentFormId(app: FastifyInstance) {
 		"/government/form/:id",
 		async (req, reply) => {
 			const { id: governmentId } = req.params;
+			console.log(
+				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa find one government",
+			);
+
 			let userJWTData: UserJWTPayload | null = null;
 			try {
 				const authorization = req.headers.authorization;

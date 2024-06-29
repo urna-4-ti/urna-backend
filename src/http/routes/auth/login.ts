@@ -4,6 +4,7 @@ import { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import { compareHash, decrypt } from "../../../lib/crypto";
 import type { User } from "@prisma/client";
+import { parseBody } from "src/utils/parseBody";
 
 export async function signIn(app: FastifyInstance) {
 	app.post("/auth/signIn", async (request, reply) => {
@@ -28,6 +29,7 @@ export async function signIn(app: FastifyInstance) {
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = request.body;
+
 		const fields = {
 			email: body.email.value,
 			password: body.password.value,
@@ -66,13 +68,7 @@ export async function signIn(app: FastifyInstance) {
 		};
 
 		const token = request.jwt.sign(payload);
-		// reply.setCookie("token", token, {
-		// 	path: "/",
-		// 	httpOnly: true,
-		// 	secure: true,
-		// 	maxAge: 60 * 60 * 24 * 7,
-		// 	domain: "urna-frontend.vercel.app",
-		// });
+
 		return { accessToken: token };
 	});
 }

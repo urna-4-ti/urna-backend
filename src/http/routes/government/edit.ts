@@ -3,7 +3,6 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../../../lib/prisma";
 import type { UserJWTPayload } from "../../../utils/types";
-import fs from "node:fs";
 
 interface RouteParams {
 	id: string;
@@ -13,6 +12,19 @@ export async function EditGovernment(app: FastifyInstance) {
 	app.patch<{
 		Params: RouteParams;
 	}>("/government/form/:id", async (req, reply) => {
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			console.log(authorization);
+
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				error: error,
+				message: "Token Missing",
+			});
+		}
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = await req.body;
 		const { id } = req.params;
@@ -27,18 +39,6 @@ export async function EditGovernment(app: FastifyInstance) {
 			description: z.string(),
 		});
 		const data = bodyschema.parse(fields);
-
-		let userJWTData: UserJWTPayload | null = null;
-		try {
-			const authorization = req.headers.authorization;
-			const access_token = authorization?.split("Bearer ")[1];
-			userJWTData = app.jwt.decode(access_token as string);
-		} catch (error) {
-			return reply.status(403).send({
-				error: error,
-				message: "Token Missing",
-			});
-		}
 
 		const loggedUser = await prisma.user.findUnique({
 			where: {
