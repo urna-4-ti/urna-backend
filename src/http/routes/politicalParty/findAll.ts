@@ -15,6 +15,7 @@ interface RouteParamsId {
 export async function FindClassPoliticalParty(app: FastifyInstance) {
 	app.get<{ Params: RouteParams }>("/political/:class", async (req, reply) => {
 		console.log("political 1");
+		const { class: CandidateClass } = req.params;
 
 		let userJWTData: UserJWTPayload | null = null;
 		console.log("political rafa");
@@ -44,9 +45,9 @@ export async function FindClassPoliticalParty(app: FastifyInstance) {
 
 		try {
 			const politicalPartys = await prisma.politicalParty.findMany({
-				// where: {
-				// 	class: CandidateClass,
-				// },
+				where: {
+					class: CandidateClass,
+				},
 			});
 			return reply.status(201).send({
 				politicalPartys: politicalPartys,

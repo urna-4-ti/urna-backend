@@ -10,12 +10,18 @@ import { randomUUID } from "node:crypto";
 
 export async function GetPoliticalRegime(app: FastifyInstance) {
 	app.get("/politicalRegime", async (req, reply) => {
+		let userJWTData: UserJWTPayload | null;
 
-		const { access_token } = req.cookies;
-
-		const userJWTData: UserJWTPayload | null = app.jwt.decode(
-			access_token as string,
-		);
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				error: error,
+				message: "Token Missing",
+			});
+		}
 
 		const loggedUser = await prisma.user.findUnique({
 			where: {
@@ -30,8 +36,9 @@ export async function GetPoliticalRegime(app: FastifyInstance) {
 		}
 
 		try {
-            const politicalRegime = await prisma.politicalRegime.findMany();
-			return reply.status(201).send({data: politicalRegime});
+			const politicalRegime = await prisma.politicalRegime.findMany();
+			return reply.status(201).send({ data: politicalRegime });
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {
 			return reply.status(403).send({
 				message: err.message,
