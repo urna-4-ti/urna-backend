@@ -9,7 +9,6 @@ export async function CreateGovernmentForm(app: FastifyInstance) {
 		const bodyschema = z.object({
 			cod: z.number(),
 			name: z.string(),
-			description: z.string(),
 		});
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = req.body;
@@ -18,7 +17,6 @@ export async function CreateGovernmentForm(app: FastifyInstance) {
 		const fields = {
 			cod: Number(body.cod.value),
 			name: body.name.value,
-			description: body.description.value,
 		};
 		const data = bodyschema.parse(fields);
 		let userJWTData: UserJWTPayload | null = null;
@@ -48,11 +46,10 @@ export async function CreateGovernmentForm(app: FastifyInstance) {
 		}
 
 		try {
-			await prisma.politicalType.create({
+			await prisma.government.create({
 				data: {
-					name: data.name,
 					cod: data.cod,
-					description: data.description,
+					name: data.name,
 				},
 			});
 			return reply.status(201).send();
