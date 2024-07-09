@@ -4,9 +4,7 @@
 ARG NODE_VERSION=21.6.2
 FROM node:${NODE_VERSION}-slim as base
 
-LABEL fly_launch_runtime="Node.js/Prisma"
-
-# Node.js/Prisma app lives here
+# Set working directory
 WORKDIR /app
 
 # Set production environment
@@ -16,41 +14,26 @@ ENV NODE_ENV="production"
 ARG PNPM_VERSION=9.1.1
 RUN npm install -g pnpm@$PNPM_VERSION
 
-
-# Throw-away build stage to reduce size of final image
-FROM base as build
-
 # Install packages needed to build node modules
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential node-gyp openssl pkg-config python-is-python3
+    apt-get install --no-install-recommends -y build-essential openssl pkg-config python-is-python3
+
+# Copy package.json and pnpm-lock.yaml to the container
+COPY --link package.json pnpm-lock.yaml ./
 
 # Install node modules
-COPY --link package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
+
+# Copy application code
+COPY --link . .
 
 # Generate Prisma Client
 COPY --link prisma .
 RUN npx prisma generate
 
-# Copy application code
-COPY --link . .
-
-
-# Final stage for app image
-FROM base
-
-# Install packages needed for deployment
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y openssl && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
-
-# Copy built application
-COPY --from=build /app /app
-
+# RUN npm run build
 # Start the server by default, this can be overwritten at runtime
 ENV PORT=4000
 EXPOSE 4000
-CMD ["npm" ,"run" ,"build"]
-RUN echo "build!"
-CMD ["npm", "run", "start"]
 
+CMD ["npm", "run", "start"]

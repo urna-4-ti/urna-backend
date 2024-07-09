@@ -109,7 +109,7 @@ model Vote {
 
   class      Classes
   election   Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
-  electionId String
+  electionId String @unique
 
   user           User   @relation(fields: [userEnrollment], references: [enrollment], onDelete: Cascade)
   userEnrollment String

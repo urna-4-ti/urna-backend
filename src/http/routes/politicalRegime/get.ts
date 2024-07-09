@@ -1,21 +1,20 @@
 // biome-ignore lint/style/useImportType: <explanation>
 import { FastifyInstance } from "fastify";
-import { z } from "zod";
 import { prisma } from "../../../lib/prisma";
-import type { Fields, UserJWTPayload } from "../../../utils/types";
-import fs from "node:fs";
-import util from "node:util";
-import { pipeline } from "node:stream";
-import { randomUUID } from "node:crypto";
+import type { UserJWTPayload } from "../../../utils/types";
 
 export async function GetPoliticalRegime(app: FastifyInstance) {
 	app.get("/politicalRegime", async (req, reply) => {
-
-		const { access_token } = req.cookies;
-
-		const userJWTData: UserJWTPayload | null = app.jwt.decode(
-			access_token as string,
-		);
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				message: "Token Missing",
+			});
+		}
 
 		const loggedUser = await prisma.user.findUnique({
 			where: {
@@ -30,8 +29,9 @@ export async function GetPoliticalRegime(app: FastifyInstance) {
 		}
 
 		try {
-            const politicalRegime = await prisma.politicalRegime.findMany();
-			return reply.status(201).send({data: politicalRegime});
+			const politicalRegime = await prisma.politicalRegime.findMany();
+			return reply.status(201).send({ data: politicalRegime });
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {
 			return reply.status(403).send({
 				message: err.message,

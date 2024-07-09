@@ -10,7 +10,6 @@ import { randomUUID } from "node:crypto";
 
 export async function CreatePoliticalRegime(app: FastifyInstance) {
 	app.post("/politicalRegime", async (req, reply) => {
-
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = await req.body;
 		console.log(body);
@@ -24,14 +23,24 @@ export async function CreatePoliticalRegime(app: FastifyInstance) {
 
 		const bodyschema = z.object({
 			cod: z.number(),
-			name: z.enum(["Parlamentarismo","Presidencialismo","SemiPresidencialismo"]),
+			name: z.enum([
+				"Parlamentarismo",
+				"Presidencialismo",
+				"SemiPresidencialismo",
+			]),
 		});
 		const data = bodyschema.parse(fields);
-		const { access_token } = req.cookies;
-
-		const userJWTData: UserJWTPayload | null = app.jwt.decode(
-			access_token as string,
-		);
+		let userJWTData: UserJWTPayload | null = null;
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				error: error,
+				message: "Token Missing",
+			});
+		}
 
 		const loggedUser = await prisma.user.findUnique({
 			where: {
@@ -46,7 +55,6 @@ export async function CreatePoliticalRegime(app: FastifyInstance) {
 		}
 
 		try {
-			
 			console.log(data);
 			await prisma.politicalRegime.create({
 				data: {
@@ -55,6 +63,7 @@ export async function CreatePoliticalRegime(app: FastifyInstance) {
 				},
 			});
 			return reply.status(201).send();
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (err: any) {
 			return reply.status(403).send({
 				message: err.message,

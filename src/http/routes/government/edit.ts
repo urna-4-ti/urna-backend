@@ -15,7 +15,6 @@ export async function EditGovernment(app: FastifyInstance) {
 		let userJWTData: UserJWTPayload | null = null;
 		try {
 			const authorization = req.headers.authorization;
-			console.log(authorization);
 
 			const access_token = authorization?.split("Bearer ")[1];
 			userJWTData = app.jwt.decode(access_token as string);

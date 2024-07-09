@@ -2,7 +2,7 @@ import fjwt from "@fastify/jwt";
 import { config } from "dotenv";
 import fCookie from "@fastify/cookie";
 import fastMultipart from "@fastify/multipart";
-import fastify, { FastifyReply } from "fastify";
+import fastify from "fastify";
 import cors from "@fastify/cors";
 import fstatic from "@fastify/static";
 import path from "node:path";
@@ -44,6 +44,7 @@ import { FindAllElections } from "./routes/election/findAll";
 import { FindOneElection } from "./routes/election/findOne";
 import { Vote } from "./routes/election/vote";
 import { CreateElection } from "./routes/election/create";
+import { log } from "winston";
 
 const app = fastify();
 
@@ -124,6 +125,7 @@ app.register(Vote);
 
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
 	console.log("front-url", process.env.FRONTEND_URL);
+	console.log("alteração surtiu efeito");
 
 	console.log("server running", value);
 });

@@ -3,6 +3,8 @@ import type { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import { parseBody } from "../../../utils/parseBody";
 import { z } from "zod";
+import { hash } from "bcrypt";
+import { randomUUID } from "node:crypto";
 
 interface RouteParams {
 	id: string;
@@ -52,7 +54,7 @@ export async function Vote(app: FastifyInstance) {
 				data: {
 					...data,
 					class: voter.class,
-					userEnrollment: data.userEnrollment,
+					userEnrollment: await hash(data.userEnrollment, randomUUID()),
 					electionId,
 				},
 			});

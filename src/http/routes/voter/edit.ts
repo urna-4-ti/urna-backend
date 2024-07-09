@@ -47,7 +47,6 @@ export async function EditVoter(app: FastifyInstance) {
 			userJWTData = app.jwt.decode(access_token as string);
 		} catch (error) {
 			return reply.status(403).send({
-				error: error,
 				message: "Missing Token",
 			});
 		}
