@@ -2,6 +2,7 @@
 import { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import type { UserJWTPayload } from "../../../utils/types";
+import type { Classes } from "@prisma/client";
 
 export async function FindAllCandidates(app: FastifyInstance) {
 	app.get("/candidate", async (req, reply) => {
@@ -109,7 +110,7 @@ export async function FindCandidatesId(app: FastifyInstance) {
 }
 
 interface ClassParams {
-	class: string;
+	class: Classes;
 }
 
 export async function FindCandidatesClass(app: FastifyInstance) {

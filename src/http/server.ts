@@ -27,6 +27,7 @@ import { getAllVoters, getVoterId } from "./routes/voter/findAll";
 import { EditCandidate } from "./routes/candidate/edit";
 import {
 	FindAllCandidates,
+	FindCandidatesClass,
 	FindCandidatesId,
 } from "./routes/candidate/findAll";
 import { EditGovernment } from "./routes/government/edit";
@@ -89,6 +90,7 @@ app.register(EditCandidate);
 app.register(FindAllCandidates);
 app.register(FindCandidatesId);
 app.register(DeleteCandidate);
+app.register(FindCandidatesClass);
 // =======================
 // government
 app.register(CreateGovernmentForm);
