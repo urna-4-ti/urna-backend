@@ -10,7 +10,7 @@ export async function hashing(data: string) {
 export async function compareHash(data: string, has: string) {
 	return await bcrypt.compare(data, has);
 }
-export async function encrypt(data: string) {
+export async function encrypt(data: string, keyOf: string = key) {
 	const encrypted = cryptojs.AES.encrypt(data, key).toString();
 	return encrypted;
 }

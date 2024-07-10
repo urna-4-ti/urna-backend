@@ -9,9 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -109,12 +109,15 @@ model Vote {
 
   class      Classes
   election   Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
-  electionId String @unique
+  electionId String
 
-  user           User   @relation(fields: [userEnrollment], references: [enrollment], onDelete: Cascade)
   userEnrollment String
 
-  @@index([id, governmentId, politicalRegimeId, candidateId])
+  whiteVote Boolean?
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+
+  @@index([id, governmentId, politicalRegimeId, candidateId, whiteVote])
 }
 
 enum Roles {

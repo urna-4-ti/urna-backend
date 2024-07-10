@@ -5,6 +5,7 @@ import { parseBody } from "../../../utils/parseBody";
 import { z } from "zod";
 import { hash } from "bcrypt";
 import { randomUUID } from "node:crypto";
+import { encrypt } from "src/lib/crypto";
 
 interface RouteParams {
 	id: string;
@@ -18,13 +19,20 @@ export async function Vote(app: FastifyInstance) {
 				politicalRegimeId: z.string().optional(),
 				governmentId: z.string().optional(),
 				candidateId: z.string().optional(),
+				whiteVote: z.coerce.boolean().optional(),
 			})
 			.refine((data) => {
 				const hasPoliticalRegimeId = data.politicalRegimeId;
 				const hasGovernmentId = data.governmentId;
 				const hasCandidateId = data.candidateId;
+				const hasWhiteVote = data.whiteVote;
 
-				if (!hasPoliticalRegimeId && !hasGovernmentId && !hasCandidateId) {
+				if (
+					!hasPoliticalRegimeId &&
+					!hasGovernmentId &&
+					!hasCandidateId &&
+					!hasWhiteVote
+				) {
 					return false;
 				}
 				return true;
@@ -36,7 +44,6 @@ export async function Vote(app: FastifyInstance) {
 		const body: any = req.body;
 
 		const fields = parseBody(body);
-		console.log(fields);
 
 		try {
 			const data = bodySchema.parse(fields);
@@ -48,14 +55,14 @@ export async function Vote(app: FastifyInstance) {
 					class: true,
 				},
 			});
-			await prisma.user;
+			console.log(data, electionId);
 
 			await prisma.vote.create({
 				data: {
 					...data,
 					class: voter.class,
-					userEnrollment: await hash(data.userEnrollment, randomUUID()),
-					electionId,
+					userEnrollment: await encrypt(data.userEnrollment, randomUUID()),
+					electionId: electionId,
 				},
 			});
 
@@ -93,6 +100,19 @@ export async function Vote(app: FastifyInstance) {
 					status: 404,
 				});
 			}
+			if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+				console.log(err);
+				return reply.status(404).send({
+					...err,
+					name: undefined,
+					clientVersion: undefined,
+					cause: err.cause,
+					message: err.message,
+					status: 404,
+				});
+			}
+			console.log(typeof err);
+			console.log(err);
 
 			return reply.status(400).send({
 				error: err,
