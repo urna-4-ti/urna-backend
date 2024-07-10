@@ -9,9 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -84,8 +84,9 @@ model Election {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name  String
-  class Classes
+  name   String
+  class  Classes
+  status electionStatus @default(CREATED)
 
   candidates       Candidate[]
   politicalRegimes PoliticalRegime[]
@@ -149,4 +150,10 @@ enum NamesPR {
   Parlamentarismo
   Presidencialismo
   SemiPresidencialismo
+}
+
+enum electionStatus {
+  CREATED
+  IN_PROGRESS
+  DONE
 }

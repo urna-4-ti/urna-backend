@@ -46,6 +46,7 @@ import { FindOneElection } from "./routes/election/findOne";
 import { Vote } from "./routes/election/vote";
 import { CreateElection } from "./routes/election/create";
 import { log } from "winston";
+import { EditElection } from "./routes/election/edit";
 
 const app = fastify();
 
@@ -123,7 +124,9 @@ app.register(DeletePoliticalRegime);
 app.register(CreateElection);
 app.register(FindAllElections);
 app.register(FindOneElection);
+app.register(EditElection);
 app.register(Vote);
+
 
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
 	console.log("front-url", process.env.FRONTEND_URL);
