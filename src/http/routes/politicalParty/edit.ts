@@ -101,7 +101,7 @@ export async function EditPoliticalParty(app: FastifyInstance) {
 						class: data.class,
 						name: data.name,
 						photoUrl: data.photoUrl,
-						politicalTypeId: data.politicalTypeId,
+						governmentId: data.politicalTypeId,
 					},
 				});
 			}
@@ -111,7 +111,7 @@ export async function EditPoliticalParty(app: FastifyInstance) {
 					data: {
 						class: data.class,
 						name: data.name,
-						politicalTypeId: data.politicalTypeId,
+						governmentId: data.politicalTypeId,
 					},
 				});
 			}
