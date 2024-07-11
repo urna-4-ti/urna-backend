@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { decrypt } from "../../../lib/crypto";
+import { decrypt, encrypt } from "../../../lib/crypto";
 import { prisma } from "../../../lib/prisma";
 import type { UserJWTPayload } from "../../../utils/types";
 import { Prisma, type User } from "@prisma/client";
@@ -84,12 +84,13 @@ export async function getVoterId(app: FastifyInstance) {
 						enrollment: enrollment,
 					},
 				});
+				console.log(user);
 				if (user) {
 					if (electionId) {
 						const UserHasVoted = await prisma.vote.findFirst({
 							where: {
-								electionId: electionId,
 								userEnrollment: enrollment,
+								electionId: electionId,
 							},
 						});
 
@@ -106,27 +107,18 @@ export async function getVoterId(app: FastifyInstance) {
 						return user;
 					};
 
-					const decryptedUdser = await UserDecrypted();
+					const decryptedUser = await UserDecrypted();
 
 					return reply.status(200).send({
-						data: decryptedUdser,
+						data: decryptedUser,
 					});
 				}
 				return reply.status(401).send({
 					message: "voter not found",
 				});
 			} catch (error) {
-				if (error instanceof Prisma.PrismaClientValidationError) {
-					console.log(error.message);
-
-					return reply.status(401).send({
-						msg: "An error occurred",
-						error: {
-							message: error.message,
-						},
-					});
-				}
-				return reply.status(401).send({
+				console.error(error);
+				return reply.status(500).send({
 					msg: "An error occurred",
 					error: error,
 				});

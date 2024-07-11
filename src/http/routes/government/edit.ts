@@ -30,7 +30,6 @@ export async function EditGovernment(app: FastifyInstance) {
 		const fields = {
 			cod: Number(body.cod.value),
 			name: body.name.value,
-			description: body.description.value,
 		};
 		const bodyschema = z.object({
 			cod: z.number(),
@@ -52,14 +51,13 @@ export async function EditGovernment(app: FastifyInstance) {
 		}
 
 		try {
-			await prisma.politicalType.update({
+			await prisma.government.update({
 				where: {
 					id,
 				},
 				data: {
 					cod: data.cod,
 					name: data.name,
-					description: data.description,
 				},
 			});
 

@@ -46,19 +46,17 @@ model PoliticalType {
   name        String
   cod         Int    @unique
   description String
-
-  PoliticalParty PoliticalParty[]
 }
 
 model PoliticalParty {
-  id              String  @id @default(uuid())
-  name            String
-  class           Classes
-  politicalTypeId String
-  photoUrl        String
+  id           String  @id @default(uuid())
+  name         String
+  class        Classes
+  photoUrl     String
+  governmentId String?
 
-  politicalType PoliticalType @relation(fields: [politicalTypeId], references: [id], onDelete: Cascade)
-  candidates    Candidate[]
+  candidates Candidate[]
+  government Government? @relation(fields: [governmentId], references: [id], onDelete: Cascade)
 }
 
 model PoliticalRegime {
@@ -77,6 +75,8 @@ model Government {
   Vote       Vote[]
   Election   Election? @relation(fields: [electionId], references: [id])
   electionId String?
+
+  PoliticalParty PoliticalParty[]
 }
 
 model Election {

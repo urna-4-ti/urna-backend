@@ -34,7 +34,7 @@ export async function DeleteGovernment(app: FastifyInstance) {
 			}
 
 			try {
-				await prisma.politicalType.delete({
+				await prisma.government.delete({
 					where: { id },
 				});
 				return reply.status(204).send();

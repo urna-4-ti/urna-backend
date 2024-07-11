@@ -153,7 +153,7 @@ export async function FindAllPoliticalParty(app: FastifyInstance) {
 		try {
 			const politicalPartys = await prisma.politicalParty.findMany({
 				include: {
-					politicalType: {
+					government: {
 						select: {
 							name: true,
 						},

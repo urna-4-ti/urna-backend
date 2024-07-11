@@ -34,7 +34,7 @@ export async function FindAllGovernmentForm(app: FastifyInstance) {
 				});
 			}
 
-			const governmentForms = await prisma.politicalType.findMany();
+			const governmentForms = await prisma.government.findMany();
 			return reply.status(201).send({
 				governments: governmentForms,
 			});
@@ -82,7 +82,7 @@ export async function FindGovernmentFormId(app: FastifyInstance) {
 			}
 
 			try {
-				const governmentForms = await prisma.politicalType.findFirstOrThrow({
+				const governmentForms = await prisma.government.findFirstOrThrow({
 					where: {
 						id: governmentId,
 					},

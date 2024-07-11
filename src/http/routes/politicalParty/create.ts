@@ -36,7 +36,7 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 				"TA_4",
 				"ADMIN",
 			]),
-			politicalTypeId: z.string().uuid(),
+			govermentId: z.string().uuid(),
 			photoUrl: z.string().optional(),
 			photo: z.string().optional(),
 		});
@@ -44,7 +44,7 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 		const fields = {
 			name: body.name.value,
 			class: body.class.value,
-			politicalTypeId: body.politicalTypeId.value,
+			govermentId: body.politicalTypeId.value,
 		};
 
 		const data = bodyschema.parse(fields);
@@ -97,7 +97,7 @@ export async function CreatePoliticalParty(app: FastifyInstance) {
 					class: data.class,
 					name: data.name,
 					photoUrl: data.photoUrl,
-					politicalTypeId: data.politicalTypeId,
+					governmentId: data.govermentId,
 				},
 			});
 			return reply.status(201).send();
