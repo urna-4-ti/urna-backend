@@ -68,23 +68,24 @@ export async function getAllVoters(app: FastifyInstance) {
 
 // FN SOMENTE PEGANDO O ID
 interface RouteParams {
-	enrollment: string;
 	electionId: string;
+	enrollment: string;
 }
 
 export async function getVoterId(app: FastifyInstance) {
 	app.get<{ Params: RouteParams }>(
-		"/voter/:id/:electionId",
+		"/voter/:enrollment/:electionId",
 		async (req, reply) => {
 			const { electionId, enrollment } = req.params;
-
+			const teste = await encrypt(enrollment);
+			console.log(teste);
 			try {
 				const user = await prisma.user.findFirst({
 					where: {
 						enrollment: enrollment,
 					},
 				});
-				console.log(user);
+				console.log("AQUIII", user);
 				if (user) {
 					if (electionId) {
 						const UserHasVoted = await prisma.vote.findFirst({
