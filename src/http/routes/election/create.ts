@@ -69,30 +69,35 @@ export async function CreateElection(app: FastifyInstance) {
 
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const body: any = req.body;
+		console.log(body);
+
+		console.log("////////////////////////////////////////////");
 
 		const fields = parseBody(body);
 		console.log(fields);
 
 		try {
 			const data = bodySchema.parse(fields);
-			console.log(data.candidates);
 
-			if (data) {
-				await prisma.election.create({
-					data: {
-						...data,
-						candidates: {
-							connect: data.candidates?.map((id) => ({ id })),
-						},
-						governmentSystem: {
-							connect: data.governmentSystems?.map((id) => ({ id })),
-						},
-						politicalRegimes: {
-							connect: data.politicalRegimes?.map((id) => ({ id })),
-						},
+			console.log("DATA");
+			console.log(data);
+
+			await prisma.election.create({
+				data: {
+					name: data.name,
+					class: data.class,
+					candidates: {
+						connect: data.candidates?.map((id) => ({ id })),
 					},
-				});
-			}
+					governmentSystem: {
+						connect: data.governmentSystems?.map((id) => ({ id })),
+					},
+					politicalRegimes: {
+						connect: data.politicalRegimes?.map((id) => ({ id })),
+					},
+				},
+			});
+			console.log("created");
 
 			return reply.status(201).send({
 				message: "voting created!",
