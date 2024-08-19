@@ -46,7 +46,11 @@ export async function Vote(app: FastifyInstance) {
 		const fields = parseBody(body);
 
 		try {
+			console.log(fields);
+
 			const data = bodySchema.parse(fields);
+			// console.log("DATA");
+			// console.log(data);
 			const voter = await prisma.user.findUniqueOrThrow({
 				where: {
 					enrollment: data.userEnrollment,
@@ -55,7 +59,6 @@ export async function Vote(app: FastifyInstance) {
 					class: true,
 				},
 			});
-			console.log(data, electionId);
 
 			await prisma.vote.create({
 				data: {

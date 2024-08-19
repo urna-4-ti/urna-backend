@@ -71,7 +71,7 @@ export async function CreateElection(app: FastifyInstance) {
 		const body: any = req.body;
 		console.log(body);
 
-		console.log("////////////////////////////////////////////");
+		// console.log("////////////////////////////////////////////");
 
 		const fields = parseBody(body);
 		console.log(fields);
@@ -79,8 +79,8 @@ export async function CreateElection(app: FastifyInstance) {
 		try {
 			const data = bodySchema.parse(fields);
 
-			console.log("DATA");
-			console.log(data);
+			// console.log("DATA");
+			// console.log(data);
 
 			await prisma.election.create({
 				data: {
