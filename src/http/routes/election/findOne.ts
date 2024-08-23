@@ -75,6 +75,7 @@ export async function FindOneElection(app: FastifyInstance) {
 								_count: true,
 							},
 						},
+						whiteVote: true,
 					},
 				}),
 			]);
@@ -83,11 +84,13 @@ export async function FindOneElection(app: FastifyInstance) {
 				candidateVotes: { [candidateName: string]: number };
 				governmentVotes: { [governamentName: string]: number };
 				politicalRegimeVotes: { [politicalRegimeName: string]: number };
+				whiteVotes: number;
 			};
 			const votes: votesReply = {
 				candidateVotes: {},
 				governmentVotes: {},
 				politicalRegimeVotes: {},
+				whiteVotes: allVotes.filter((item) => item.whiteVote).length,
 			};
 			allVotes.map((item) => {
 				if (item.candidateVote?.name) {
