@@ -13,22 +13,22 @@ import { signIn } from "./routes/auth/login";
 import { CreateCandidate } from "./routes/candidate/create";
 import { CreateGovernmentForm } from "./routes/government/create";
 import {
-	FindAllGovernmentForm,
-	FindGovernmentFormId,
+  FindAllGovernmentForm,
+  FindGovernmentFormId,
 } from "./routes/government/findAll";
 import { CreatePoliticalParty } from "./routes/politicalParty/create";
 import {
-	FindAllPoliticalParty,
-	FindClassPoliticalParty,
-	FindIdPoliticalParty,
+  FindAllPoliticalParty,
+  FindClassPoliticalParty,
+  FindIdPoliticalParty,
 } from "./routes/politicalParty/findAll";
 import { createVoter } from "./routes/voter/create";
 import { getAllVoters, getVoterId } from "./routes/voter/findAll";
 import { EditCandidate } from "./routes/candidate/edit";
 import {
-	FindAllCandidates,
-	FindCandidatesClass,
-	FindCandidatesId,
+  FindAllCandidates,
+  FindCandidatesClass,
+  FindCandidatesId,
 } from "./routes/candidate/findAll";
 import { EditGovernment } from "./routes/government/edit";
 import { EditPoliticalParty } from "./routes/politicalParty/edit";
@@ -45,7 +45,6 @@ import { FindAllElections } from "./routes/election/findAll";
 import { FindOneElection } from "./routes/election/findOne";
 import { Vote } from "./routes/election/vote";
 import { CreateElection } from "./routes/election/create";
-import { log } from "winston";
 import { EditElection } from "./routes/election/edit";
 
 const app = fastify();
@@ -53,30 +52,30 @@ const app = fastify();
 config();
 
 app.register(cors, {
-	origin: process.env.FRONTEND_URL ?? "https://ifurna.vercel.app",
-	credentials: true,
-	allowedHeaders: ["Authorization"],
+  origin: process.env.FRONTEND_URL ?? "https://ifurna.vercel.app",
+  credentials: true,
+  allowedHeaders: ["Authorization"],
 });
 
 app.register(fjwt, {
-	secret: process.env.JWT_ASSIGN || "secret-key",
+  secret: process.env.JWT_ASSIGN || "secret-key",
 });
 app.register(fastMultipart, {
-	attachFieldsToBody: true,
+  attachFieldsToBody: true,
 });
 
-app.addHook("preHandler", (req, res, next) => {
-	req.jwt = app.jwt;
-	return next();
+app.addHook("preHandler", (req, _, next) => {
+  req.jwt = app.jwt;
+  return next();
 });
-
 app.register(fCookie, {
-	secret: process.env.COOKIE_SECRET,
-	hook: "preHandler",
-});
+  secret: process.env.COOKIE_SECRET,
+  hook: 'preHandler'
+})
+
 app.register(fstatic, {
-	root: path.join(__dirname, "../../uploads"),
-	prefix: "/public/",
+  root: path.join(__dirname, "../../uploads"),
+  prefix: "/public/",
 });
 
 // routes
@@ -129,8 +128,8 @@ app.register(Vote);
 
 
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
-	console.log("front-url", process.env.FRONTEND_URL);
-	console.log("alteração surtiu efeito");
+  console.log("front-url", process.env.FRONTEND_URL);
+  console.log("alteração surtiu efeito");
 
-	console.log("server running", value);
+  console.log("server running", value);
 });

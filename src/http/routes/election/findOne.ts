@@ -2,127 +2,139 @@ import { Prisma } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import type { UserJWTPayload } from "../../../utils/types";
+import { log } from "node:console";
 interface RouteParams {
-	id: string;
+  id: string;
 }
 
 export async function FindOneElection(app: FastifyInstance) {
-	app.get<{ Params: RouteParams }>("/election/:id", async (req, reply) => {
-		let userJWTData: UserJWTPayload | null = null;
-		try {
-			const authorization = req.headers.authorization;
-			const access_token = authorization?.split("Bearer ")[1];
-			userJWTData = app.jwt.decode(access_token as string);
-		} catch (error) {
-			return reply.status(403).send({
-				error: error,
-				message: "Missing Token",
-			});
-		}
+  app.get<{ Params: RouteParams }>("/election/:id", async (req, reply) => {
+    const { id } = req.params;
 
-		const loggedUser = await prisma.user.findUnique({
-			where: {
-				email: userJWTData?.email,
-			},
-		});
 
-		if (loggedUser?.role !== "ADMIN") {
-			return reply.status(403).send({
-				message: "Action not permitted",
-			});
-		}
+    console.log(id);
 
-		const { id } = req.params;
+    try {
+      const [voting, allVotes] = await prisma.$transaction([
+        prisma.election.findUnique({
+          where: {
+            id,
+          },
+          include: {
+            candidates: true,
+            governmentSystem: true,
+            politicalRegimes: true,
+          },
+        }),
+        prisma.vote.findMany({
+          distinct: ["candidateId", "governmentId", "politicalRegimeId"],
+          where: {
+            electionId: id
+          },
+          select: {
+            candidateVote: {
+              where: {
+                electionId: id
+              },
+              select: {
+                name: true,
+                electionId: true,
+                _count: {
+                  select: {
+                    Vote: {
+                      where: {
+                        electionId: id,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            governmentVote: {
+              where: {
+                electionId: id
+              },
+              select: {
+                name: true,
+                electionId: true,
+                _count: {
+                  select: {
+                    Vote: {
+                      where: {
+                        electionId: id,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            politicalRegimeVote: {
+              where: {
+                electionId: id
+              },
+              select: {
+                name: true,
+                electionId: true,
+                _count: {
+                  select: {
+                    Vote: {
+                      where: {
+                        electionId: id,
+                      },
+                    },
+                  },
+                }
+              },
+            },
+          },
+        }),
+      ]);
 
-		try {
-			const [voting, allVotes] = await prisma.$transaction([
-				prisma.election.findUniqueOrThrow({
-					where: {
-						id,
-					},
-					include: {
-						candidates: true,
-						governmentSystem: true,
-						politicalRegimes: true,
-					},
-				}),
-				prisma.vote.findMany({
-					distinct: ["candidateId", "governmentId", "politicalRegimeId"],
-					select: {
-						candidateVote: {
-							select: {
-								name: true,
-								_count: {
-									select: {
-										Vote: {
-											where: {
-												electionId: id,
-											},
-										},
-									},
-								},
-							},
-						},
-						governmentVote: {
-							select: {
-								name: true,
-								_count: true,
-							},
-						},
-						politicalRegimeVote: {
-							select: {
-								name: true,
-								_count: true,
-							},
-						},
-						whiteVote: true,
-					},
-				}),
-			]);
-
-			type votesReply = {
-				candidateVotes: { [candidateName: string]: number };
-				governmentVotes: { [governamentName: string]: number };
-				politicalRegimeVotes: { [politicalRegimeName: string]: number };
+      type votesReply = {
+        candidateVotes: { [candidateName: string]: number };
+        governmentVotes: { [governamentName: string]: number };
+        politicalRegimeVotes: { [politicalRegimeName: string]: number };
 				whiteVotes: number;
-			};
-			const votes: votesReply = {
-				candidateVotes: {},
-				governmentVotes: {},
-				politicalRegimeVotes: {},
+      };
+      const votes: votesReply = {
+        candidateVotes: {},
+        governmentVotes: {},
+        politicalRegimeVotes: {},
 				whiteVotes: allVotes.filter((item) => item.whiteVote).length,
-			};
-			allVotes.map((item) => {
-				if (item.candidateVote?.name) {
-					votes.candidateVotes[item.candidateVote.name] =
-						item.candidateVote._count.Vote;
-				}
-				if (item.governmentVote?.name) {
-					votes.governmentVotes[item.governmentVote.name] =
-						item.governmentVote._count.Vote;
-				}
-				if (item.politicalRegimeVote?.name) {
-					votes.politicalRegimeVotes[item.politicalRegimeVote.name] =
-						item.politicalRegimeVote._count.Vote;
-				}
-			});
+      };
+      allVotes.map((item) => {
+        console.log('onevote: ', item);
 
-			return reply.send({
-				voting: {
-					...voting,
-					votes,
-				},
-			});
-		} catch (err) {
-			if (err instanceof Prisma.PrismaClientKnownRequestError) {
-				return reply.status(404).send({
-					...err,
-					name: undefined,
-					clientVersion: undefined,
-					message: err.message,
-					status: 404,
-				});
-			}
-		}
-	});
+        if (item.candidateVote?.name && item.candidateVote.electionId === id) {
+          votes.candidateVotes[item.candidateVote.name] =
+            item.candidateVote._count.Vote;
+        }
+        if (item.governmentVote?.name) {
+          votes.governmentVotes[item.governmentVote.name] =
+            item.governmentVote._count.Vote;
+        }
+        if (item.politicalRegimeVote?.name) {
+          votes.politicalRegimeVotes[item.politicalRegimeVote.name] =
+            item.politicalRegimeVote._count.Vote;
+        }
+      });
+
+      return reply.send({
+        voting: {
+          ...voting,
+          votes,
+        },
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        return reply.status(404).send({
+          ...err,
+          name: undefined,
+          clientVersion: undefined,
+          message: err.message,
+          status: 404,
+        });
+      }
+    }
+  });
 }

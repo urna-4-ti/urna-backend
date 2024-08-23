@@ -5,7 +5,7 @@ IMAGE_NAME="urna-apiv3"
 IMAGE_VERSION=$(git rev-parse --short HEAD)
 
 REGION="southamerica-east1"
-pnpm build
+# pnpm build
 
 docker buildx build --platform=linux/amd64 -t ${IMAGE_NAME}:${IMAGE_VERSION} .
 
