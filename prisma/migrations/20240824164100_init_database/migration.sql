@@ -32,7 +32,6 @@ CREATE TABLE "Candidate" (
     "picPath" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "politicalPartyId" TEXT NOT NULL,
-    "electionId" TEXT,
 
     CONSTRAINT "Candidate_pkey" PRIMARY KEY ("id")
 );
@@ -63,7 +62,6 @@ CREATE TABLE "PoliticalRegime" (
     "id" TEXT NOT NULL,
     "name" "NamesPR" NOT NULL,
     "cod" INTEGER NOT NULL,
-    "electionId" TEXT,
 
     CONSTRAINT "PoliticalRegime_pkey" PRIMARY KEY ("id")
 );
@@ -73,7 +71,6 @@ CREATE TABLE "Government" (
     "id" TEXT NOT NULL,
     "cod" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
-    "electionId" TEXT,
 
     CONSTRAINT "Government_pkey" PRIMARY KEY ("id")
 );
@@ -106,6 +103,24 @@ CREATE TABLE "Vote" (
     CONSTRAINT "Vote_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "_CandidateToElection" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "_ElectionToPoliticalRegime" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "_ElectionToGovernment" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_enrollment_key" ON "User"("enrollment");
 
@@ -127,20 +142,29 @@ CREATE UNIQUE INDEX "PoliticalRegime_cod_key" ON "PoliticalRegime"("cod");
 -- CreateIndex
 CREATE INDEX "Vote_id_governmentId_politicalRegimeId_candidateId_whiteVot_idx" ON "Vote"("id", "governmentId", "politicalRegimeId", "candidateId", "whiteVote");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "_CandidateToElection_AB_unique" ON "_CandidateToElection"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_CandidateToElection_B_index" ON "_CandidateToElection"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_ElectionToPoliticalRegime_AB_unique" ON "_ElectionToPoliticalRegime"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_ElectionToPoliticalRegime_B_index" ON "_ElectionToPoliticalRegime"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_ElectionToGovernment_AB_unique" ON "_ElectionToGovernment"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_ElectionToGovernment_B_index" ON "_ElectionToGovernment"("B");
+
 -- AddForeignKey
 ALTER TABLE "Candidate" ADD CONSTRAINT "Candidate_politicalPartyId_fkey" FOREIGN KEY ("politicalPartyId") REFERENCES "PoliticalParty"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Candidate" ADD CONSTRAINT "Candidate_electionId_fkey" FOREIGN KEY ("electionId") REFERENCES "Election"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "PoliticalParty" ADD CONSTRAINT "PoliticalParty_governmentId_fkey" FOREIGN KEY ("governmentId") REFERENCES "Government"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "PoliticalRegime" ADD CONSTRAINT "PoliticalRegime_electionId_fkey" FOREIGN KEY ("electionId") REFERENCES "Election"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Government" ADD CONSTRAINT "Government_electionId_fkey" FOREIGN KEY ("electionId") REFERENCES "Election"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Vote" ADD CONSTRAINT "Vote_governmentId_fkey" FOREIGN KEY ("governmentId") REFERENCES "Government"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -156,3 +180,21 @@ ALTER TABLE "Vote" ADD CONSTRAINT "Vote_electionId_fkey" FOREIGN KEY ("electionI
 
 -- AddForeignKey
 ALTER TABLE "Vote" ADD CONSTRAINT "Vote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_CandidateToElection" ADD CONSTRAINT "_CandidateToElection_A_fkey" FOREIGN KEY ("A") REFERENCES "Candidate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_CandidateToElection" ADD CONSTRAINT "_CandidateToElection_B_fkey" FOREIGN KEY ("B") REFERENCES "Election"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ElectionToPoliticalRegime" ADD CONSTRAINT "_ElectionToPoliticalRegime_A_fkey" FOREIGN KEY ("A") REFERENCES "Election"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ElectionToPoliticalRegime" ADD CONSTRAINT "_ElectionToPoliticalRegime_B_fkey" FOREIGN KEY ("B") REFERENCES "PoliticalRegime"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ElectionToGovernment" ADD CONSTRAINT "_ElectionToGovernment_A_fkey" FOREIGN KEY ("A") REFERENCES "Election"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ElectionToGovernment" ADD CONSTRAINT "_ElectionToGovernment_B_fkey" FOREIGN KEY ("B") REFERENCES "Government"("id") ON DELETE CASCADE ON UPDATE CASCADE;

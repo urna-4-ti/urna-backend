@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Election, Prisma, Candidate, PoliticalRegime, Government } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import type { UserJWTPayload } from "../../../utils/types";
@@ -27,18 +27,15 @@ export async function FindOneElection(app: FastifyInstance) {
           },
         }),
         prisma.vote.findMany({
-          distinct: ["candidateId", "governmentId", "politicalRegimeId"],
+          distinct: ["candidateId", "governmentId", "politicalRegimeId", 'whiteVote'],
           where: {
             electionId: id
           },
           select: {
+            whiteVote: true,
             candidateVote: {
-              where: {
-                electionId: id
-              },
               select: {
                 name: true,
-                electionId: true,
                 _count: {
                   select: {
                     Vote: {
@@ -51,12 +48,8 @@ export async function FindOneElection(app: FastifyInstance) {
               },
             },
             governmentVote: {
-              where: {
-                electionId: id
-              },
               select: {
                 name: true,
-                electionId: true,
                 _count: {
                   select: {
                     Vote: {
@@ -69,12 +62,8 @@ export async function FindOneElection(app: FastifyInstance) {
               },
             },
             politicalRegimeVote: {
-              where: {
-                electionId: id
-              },
               select: {
                 name: true,
-                electionId: true,
                 _count: {
                   select: {
                     Vote: {
@@ -86,26 +75,40 @@ export async function FindOneElection(app: FastifyInstance) {
                 }
               },
             },
+
           },
         }),
       ]);
+
 
       type votesReply = {
         candidateVotes: { [candidateName: string]: number };
         governmentVotes: { [governamentName: string]: number };
         politicalRegimeVotes: { [politicalRegimeName: string]: number };
-				whiteVotes: number;
+        whiteVotes: number;
       };
       const votes: votesReply = {
         candidateVotes: {},
         governmentVotes: {},
         politicalRegimeVotes: {},
-				whiteVotes: allVotes.filter((item) => item.whiteVote).length,
+        whiteVotes: allVotes.filter((item) => item.whiteVote).length,
       };
-      allVotes.map((item) => {
-        console.log('onevote: ', item);
 
-        if (item.candidateVote?.name && item.candidateVote.electionId === id) {
+
+
+      const votingWhitVotes = {
+        name: voting?.name,
+        class: voting?.class,
+        id: voting?.id,
+        status: voting?.status,
+        politicalRegimes: voting?.politicalRegimes.map(regime => ({ ...regime, votes: 0 })),
+        governmentSystem: voting?.governmentSystem.map(system => ({ ...system, votes: 0 })),
+        candidates: voting?.candidates.map(candidate => ({ ...candidate, votes: 0 }))
+      }
+
+      allVotes.map((item) => {
+
+        if (item.candidateVote?.name) {
           votes.candidateVotes[item.candidateVote.name] =
             item.candidateVote._count.Vote;
         }
@@ -118,11 +121,33 @@ export async function FindOneElection(app: FastifyInstance) {
             item.politicalRegimeVote._count.Vote;
         }
       });
+      if (voting?.politicalRegimes) {
 
+        votingWhitVotes.politicalRegimes = voting?.politicalRegimes.map(regime => ({
+          ...regime,
+          votes: votes.politicalRegimeVotes[regime.name] || 0
+        }))
+      }
+      if (voting?.candidates) {
+        votingWhitVotes.candidates = voting.candidates.map(candidate => ({
+          ...candidate,
+          votes: votes.candidateVotes[candidate.name] || 0
+        }))
+      }
+      if (voting?.governmentSystem) {
+        votingWhitVotes.governmentSystem = voting.governmentSystem.map(government => ({
+          ...government,
+          votes: votes.governmentVotes[government.name] || 0
+        }))
+      }
+
+      votingWhitVotes.candidates?.sort((a, b) => b.votes - a.votes)
+      votingWhitVotes.politicalRegimes?.sort((a, b) => b.votes - a.votes)
+      votingWhitVotes.governmentSystem?.sort((a, b) => b.votes - a.votes)
       return reply.send({
         voting: {
-          ...voting,
-          votes,
+          ...votingWhitVotes,
+          votes
         },
       });
     } catch (err) {

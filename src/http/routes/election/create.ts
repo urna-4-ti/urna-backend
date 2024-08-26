@@ -74,27 +74,34 @@ export async function CreateElection(app: FastifyInstance) {
     console.log('fields', fields);
 
     try {
-      const data = bodySchema.parse(fields);
-      console.log('parsed ', data);
+      const zBody = bodySchema.parse(fields);
+      console.log('parsed ', zBody);
 
-      if (data) {
+      if (zBody) {
 
-        await prisma.election.create({
+        const election = await prisma.election.create({
           data: {
-            name: data.name,
-            class: data.class,
+            name: zBody.name,
+            class: zBody.class,
             status: 'CREATED',
-            candidates: {
-              connect: data.candidates?.map((id) => ({ id })),
-            },
-            governmentSystem: {
-              connect: data.governmentSystems?.map((id) => ({ id })),
-            },
-            politicalRegimes: {
-              connect: data.politicalRegimes?.map((id) => ({ id })),
-            },
           },
         });
+        await prisma.election.update({
+          where: { id: election.id },
+          data: {
+            candidates: {
+              connect: zBody.candidates?.map((id) => ({ id }))
+            },
+            politicalRegimes: {
+              connect: zBody.politicalRegimes?.map(id => ({ id }))
+            },
+            governmentSystem: {
+              connect: zBody.governmentSystems?.map(id => ({ id }))
+            }
+          }
+        })
+
+
       }
       console.log('created');
 
