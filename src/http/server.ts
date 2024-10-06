@@ -10,126 +10,83 @@ import path from "node:path";
 // routes
 import { signUp } from "./routes/auth/signUp";
 import { signIn } from "./routes/auth/login";
-import { CreateCandidate } from "./routes/candidate/create";
-import { CreateGovernmentForm } from "./routes/government/create";
-import {
-  FindAllGovernmentForm,
-  FindGovernmentFormId,
-} from "./routes/government/findAll";
-import { CreatePoliticalParty } from "./routes/politicalParty/create";
-import {
-  FindAllPoliticalParty,
-  FindClassPoliticalParty,
-  FindIdPoliticalParty,
-} from "./routes/politicalParty/findAll";
-import { createVoter } from "./routes/voter/create";
-import { getAllVoters, getVoterId } from "./routes/voter/findAll";
-import { EditCandidate } from "./routes/candidate/edit";
-import {
-  FindAllCandidates,
-  FindCandidatesClass,
-  FindCandidatesId,
-} from "./routes/candidate/findAll";
-import { EditGovernment } from "./routes/government/edit";
-import { EditPoliticalParty } from "./routes/politicalParty/edit";
-import { EditVoter } from "./routes/voter/edit";
-import { DeleteCandidate } from "./routes/candidate/delete";
-import { DeleteGovernment } from "./routes/government/delete";
-import { DeletePoliticalParty } from "./routes/politicalParty/delete";
-import { DeleteVoter } from "./routes/voter/delete";
-import { CreatePoliticalRegime } from "./routes/politicalRegime/create";
-import { DeletePoliticalRegime } from "./routes/politicalRegime/delete";
-import { EditPoliticalRegime } from "./routes/politicalRegime/edit";
-import { GetPoliticalRegime } from "./routes/politicalRegime/get";
-import { FindAllElections } from "./routes/election/findAll";
-import { FindOneElection } from "./routes/election/findOne";
-import { Vote } from "./routes/election/vote";
-import { CreateElection } from "./routes/election/create";
-import { EditElection } from "./routes/election/edit";
+
+import fastifyMultipart from "@fastify/multipart";
+import { ConnectWork } from "./routes/trabalho/connect-work";
+import { ImportTrabalho } from "./routes/trabalho/create";
+import { deleteTrabalho } from "./routes/trabalho/delete";
+import { getOneTrabalho } from "./routes/trabalho/find-one";
+import { getTrabalho } from "./routes/trabalho/find";
+import { DisconnectWork } from "./routes/trabalho/remove-connect";
+import { ImportAvaliador } from "./routes/avaliador/create";
+import { deleteAvaliador } from "./routes/avaliador/delete";
+import { getOneAvaliador } from "./routes/avaliador/find-one";
+import { getAvaliadores } from "./routes/avaliador/find";
+import { fileMiddleware } from "src/lib/middleware";
 
 const app = fastify();
 
 config();
 
 app.register(cors, {
-  origin: process.env.FRONTEND_URL ?? "https://ifurna.vercel.app",
-  credentials: true,
-  allowedHeaders: ["Authorization"],
+	origin: process.env.FRONTEND_URL,
+	credentials: true,
+	allowedHeaders: ["Authorization"],
 });
 
 app.register(fjwt, {
-  secret: process.env.JWT_ASSIGN || "secret-key",
+	secret: process.env.JWT_ASSIGN || "secret-key",
 });
 app.register(fastMultipart, {
-  attachFieldsToBody: true,
+	attachFieldsToBody: true,
 });
 
 app.addHook("preHandler", (req, _, next) => {
-  req.jwt = app.jwt;
-  return next();
+	req.jwt = app.jwt;
+	return next();
 });
 app.register(fCookie, {
-  secret: process.env.COOKIE_SECRET,
-  hook: 'preHandler'
-})
-
-app.register(fstatic, {
-  root: path.join(__dirname, "../../uploads"),
-  prefix: "/public/",
+	secret: process.env.COOKIE_SECRET,
+	hook: "preHandler",
 });
 
+app.register(fstatic, {
+	root: path.join(__dirname, "../../uploads"),
+	prefix: "/public/",
+});
+
+app.register(fileMiddleware);
 // routes
 
 // auth
 app.register(signUp);
 app.register(signIn);
-// =======================
-// candidate
-app.register(CreateCandidate);
-app.register(EditCandidate);
-app.register(FindAllCandidates);
-app.register(FindCandidatesId);
-app.register(DeleteCandidate);
-app.register(FindCandidatesClass);
-// =======================
-// government
-app.register(CreateGovernmentForm);
-app.register(FindAllGovernmentForm);
-app.register(FindGovernmentFormId);
-app.register(EditGovernment);
-app.register(DeleteGovernment);
-// =======================
-// politicalPaty
-app.register(CreatePoliticalParty);
-app.register(FindClassPoliticalParty);
-app.register(FindAllPoliticalParty);
-app.register(FindIdPoliticalParty);
-app.register(EditPoliticalParty);
-app.register(DeletePoliticalParty);
-// =======================
-// voter
-app.register(createVoter);
-app.register(getAllVoters);
-app.register(EditVoter);
-app.register(DeleteVoter);
-app.register(getVoterId);
-app.register(GetPoliticalRegime);
-app.register(CreatePoliticalRegime);
-app.register(EditPoliticalRegime);
-app.register(DeletePoliticalRegime);
 
 // =======================
-// voting
-app.register(CreateElection);
-app.register(FindAllElections);
-app.register(FindOneElection);
-app.register(EditElection);
-app.register(Vote);
 
+//TRABALHOS
+
+app.register(ConnectWork);
+app.register(ImportTrabalho);
+app.register(deleteTrabalho);
+app.register(getOneTrabalho);
+app.register(getTrabalho);
+app.register(DisconnectWork);
+
+// =======================
+
+//AVALIADOR
+
+app.register(ImportAvaliador);
+app.register(deleteAvaliador);
+app.register(getOneAvaliador);
+app.register(getAvaliadores);
+
+// =======================
 
 app.listen({ port: 4000, host: "0.0.0.0" }).then((value) => {
-  console.log("front-url", process.env.FRONTEND_URL);
-  console.log("alteração surtiu efeito");
+	console.log("front-url", process.env.FRONTEND_URL);
+	console.log("alteração surtiu efeito");
 
-  console.log("server running", value);
+	console.log("server running", value);
 });

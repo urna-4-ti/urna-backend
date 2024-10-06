@@ -6,11 +6,11 @@ services:
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_USER=urna
+      - POSTGRES_USER=sistema-votacao
       - POSTGRES_PASSWORD=backend
-      - POSTGRES_DB=urna-db
+      - POSTGRES_DB=sistema-db
     volumes:
-      - urna_pg_data:/bitnami/postgresql
+      - sistema_votacao_pg_data:/bitnami/postgresql
 
 volumes:
-  urna_pg_data:
+  sistema_votacao_pg_data:

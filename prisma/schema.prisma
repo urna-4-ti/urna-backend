@@ -11,146 +11,49 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  //  directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id           String  @id @default(uuid())
-  name         String
-  role         Roles
-  enrollment   String  @unique
-  email        String  @unique
-  hashPassword String
-  password     String
-  class        Classes
-  Vote         Vote[]
-
-  @@index([id, enrollment])
+model Usuario {
+  id            String      @id @default(uuid())
+  nome          String
+  email         String
+  role          Roles
+  cpf           String      @unique
+  telefone      String
+  senha         String?
+  hashSenha     String?
+  formacao      String?
+  interesse     String?
+  disponilidade String?
+  trabalhos     Trabalho[]
+  avaliacoes    Avaliacao[]
 }
 
-model Candidate {
-  id               String         @id @default(uuid())
-  name             String
-  cod              Int            @unique
-  picPath          String
-  description      String
-  politicalPartyId String
-  PoliticalParty   PoliticalParty @relation(fields: [politicalPartyId], references: [id], onDelete: Cascade)
-  Vote             Vote[]
-  Election         Election[]
+model Trabalho {
+  id              String    @id @default(uuid())
+  titulo_trabalho String
+  instituicao     String
+  modalidade      String
+  nivel_ensino    String
+  area            String
+  autores         Usuario[] @relation
+
+  Avaliacao Avaliacao[]
 }
 
-model PoliticalType {
-  id          String @id @default(uuid())
-  name        String
-  cod         Int    @unique
-  description String
-}
+model Avaliacao {
+  id         String   @id @default(uuid())
+  usuarioId  String
+  trabalhoId String
+  nota       Float
+  inclusao   Boolean?
 
-model PoliticalParty {
-  id           String  @id @default(uuid())
-  name         String
-  class        Classes
-  photoUrl     String
-  governmentId String?
-
-  candidates Candidate[]
-  government Government? @relation(fields: [governmentId], references: [id], onDelete: Cascade)
-}
-
-model PoliticalRegime {
-  id       String     @id @default(uuid())
-  name     NamesPR
-  cod      Int        @unique
-  Vote     Vote[]
-  Election Election[]
-}
-
-model Government {
-  id       String     @id @default(uuid())
-  cod      Int
-  name     String
-  Vote     Vote[]
-  Election Election[]
-
-  PoliticalParty PoliticalParty[]
-}
-
-model Election {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name   String
-  class  Classes
-  status electionStatus @default(CREATED)
-
-  candidates       Candidate[]
-  politicalRegimes PoliticalRegime[]
-  governmentSystem Government[]
-
-  votes Vote[]
-}
-
-model Vote {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-
-  governmentVote Government? @relation(fields: [governmentId], references: [id], onDelete: Cascade)
-  governmentId   String?
-
-  politicalRegimeVote PoliticalRegime? @relation(fields: [politicalRegimeId], references: [id], onDelete: Cascade)
-  politicalRegimeId   String?
-
-  candidateVote Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  candidateId   String?
-
-  class      Classes
-  election   Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
-  electionId String
-
-  userEnrollment String
-
-  whiteVote Boolean?
-  User      User?    @relation(fields: [userId], references: [id])
-  userId    String?
-
-  @@index([id, governmentId, politicalRegimeId, candidateId, whiteVote])
+  trabalhos Trabalho @relation(fields: [trabalhoId], references: [id])
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
 }
 
 enum Roles {
   ADMIN
-  VOTER
-}
-
-enum Classes {
-  TI_1
-  TI_2
-  TI_3
-  TI_4
-  TQ_1
-  TQ_2
-  TQ_3
-  TQ_4
-  TMA_1
-  TMA_2
-  TMA_3
-  TMA_4
-  TA_1
-  TA_2
-  TA_3
-  TA_4
-  ADMIN
-}
-
-enum NamesPR {
-  Parlamentarismo
-  Presidencialismo
-  SemiPresidencialismo
-}
-
-enum electionStatus {
-  CREATED
-  IN_PROGRESS
-  DONE
+  AVALIADOR
+  NORMAL
 }

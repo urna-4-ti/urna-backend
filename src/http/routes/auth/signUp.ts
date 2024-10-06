@@ -3,13 +3,15 @@ import type { FastifyInstance } from "fastify";
 import { hashing, encrypt } from "../../../lib/crypto";
 import { prisma } from "../../../lib/prisma";
 import { Roles } from "@prisma/client";
+import fastifyMultipart from "@fastify/multipart";
+import fastifyJwt from "@fastify/jwt";
 
 export async function signUp(app: FastifyInstance) {
 	app.post("/auth/signUp", async (request, reply) => {
 		const loginBody = z.object({
-			name: z.string(),
+			nome: z.string(),
 			email: z.string().email("The field is not email"),
-			password: z
+			senha: z
 				.string()
 				.min(6, "The password must be 6 characters or longer")
 				.refine(
@@ -24,45 +26,20 @@ export async function signUp(app: FastifyInstance) {
 					(password) => /[#-@]/.test(password),
 					"The password must contain at least one of the special characters: #, -, @",
 				),
-			role: z.enum(["ADMIN", "VOTER"]),
-			enrollment: z.string(),
-			class: z.enum([
-				"TI_1",
-				"TI_2",
-				"TI_3",
-				"TI_4",
-				"TQ_1",
-				"TQ_2",
-				"TQ_3",
-				"TQ_4",
-				"TMA_1",
-				"TMA_2",
-				"TMA_3",
-				"TMA_4",
-				"TA_1",
-				"TA_2",
-				"TA_3",
-				"TA_4",
-				"ADMIN",
-			]),
+			role: z.enum(["ADMIN", "AVALIADOR"]),
 		});
 
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		const body: any = request.body;
+		// Acessar os campos do formulário
+		const fields = request.body;
 
-		const fields = {
-			email: body.email.value,
-			password: body.password.value,
-			name: body.name.value,
-			class: body.class.value,
-			role: body.role.value,
-			enrollment: body.enrollment.value,
-		};
+		// Acessar os arquivos enviados
+		const files = request.files;
+
 		const data = loginBody.parse(fields);
 
-		const cryptoPassword = await encrypt(data.password);
-		const hashPassword = await hashing(data.password);
-		const cryptoName = await encrypt(data.name);
+		const cryptoPassword = await encrypt(data.senha);
+		const hashPassword = await hashing(data.senha);
+		const cryptoName = await encrypt(data.nome);
 
 		if (data.role === Roles.ADMIN) {
 			return reply
@@ -71,15 +48,15 @@ export async function signUp(app: FastifyInstance) {
 		}
 
 		try {
-			await prisma.user.create({
+			await prisma.usuario.create({
 				data: {
 					email: data.email,
-					name: cryptoName,
-					password: cryptoPassword,
-					hashPassword: hashPassword,
-					class: data.class,
-					enrollment: data.enrollment,
+					nome: cryptoName,
+					senha: cryptoPassword,
+					hashSenha: hashPassword,
 					role: data.role,
+					cpf: "",
+					telefone: "",
 				},
 			});
 
