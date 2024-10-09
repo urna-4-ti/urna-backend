@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import util from "node:util";
 import XLSX from "xlsx";
@@ -8,6 +8,7 @@ import { randomUUID } from "node:crypto";
 import fastifyMultipart from "@fastify/multipart";
 import path from "node:path";
 import { encrypt } from "src/lib/crypto";
+import type { UserJWTPayload } from "src/utils/types";
 
 interface ResData {
 	D: string;
@@ -16,33 +17,53 @@ interface ResData {
 	G: string;
 }
 
-interface FileRequest extends FastifyRequest {
-	fileData?: {
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		file: any;
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		formFields: any;
-	};
-}
-
 export async function ImportAvaliador(app: FastifyInstance) {
-	app.post("/avaliador/import", async (req: FileRequest, reply) => {
-		const fileData = req.fileData;
+	app.register(fastifyMultipart);
+	app.post("/avaliador/import", async (req, reply) => {
+		const data = await req.file();
 
-		if (!fileData) {
+		//Verifica a existencia do arquivo
+		if (!data) {
 			return reply.status(404).send({
 				message: "File not provided",
 			});
 		}
 
-		const file = fileData.file;
-		const extension = path.extname(file.filename);
-
+		const extension = path.extname(data.filename);
+		//Verifica se o tipo do arquivo é xlsx
 		if (extension !== ".xlsx") {
 			return reply.status(400).send({
 				message: "File must be xlsx",
 			});
 		}
+
+		let userJWTData: UserJWTPayload | null = null;
+
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				message: "Token missing",
+			});
+		}
+
+		console.log("TESTEEEEEEEEEE", userJWTData);
+
+		const loggedUser = await prisma.usuario.findUnique({
+			where: {
+				id: userJWTData?.id,
+			},
+		});
+
+		if (loggedUser?.role !== "ADMIN") {
+			return reply.status(401).send({
+				message: "Unauthorized",
+			});
+		}
+
+		//cria a pasta uploads para o armazenamento do arquivo
 
 		fs.access("uploads", fs.constants.F_OK, (err) => {
 			if (err) {
@@ -51,16 +72,15 @@ export async function ImportAvaliador(app: FastifyInstance) {
 		});
 
 		const uid = randomUUID();
-		const filePath = `uploads/${uid}-${file.filename}`;
+		const filePath = `uploads/${uid}-${data.filename}`;
 		const writeStream = fs.createWriteStream(filePath);
 		const pump = util.promisify(pipeline);
-		await pump(file.file, writeStream);
+		await pump(data.file, writeStream);
 
 		const fileBuffer = await fs.promises.readFile(filePath);
 		const workbook = XLSX.read(fileBuffer, { type: "buffer" });
 
 		const sheetNames = workbook.SheetNames;
-
 		// biome-ignore lint/correctness/noUnreachable: <explanation>
 		for (let i = 0; i < sheetNames.length; i++) {
 			const worksheet = workbook.Sheets[sheetNames[i]];
@@ -81,13 +101,13 @@ export async function ImportAvaliador(app: FastifyInstance) {
 			};
 
 			try {
-				const user = await prisma.usuario.findMany({
-					where: {
-						role: "AVALIADOR",
-					},
-				});
+				const user = await prisma.usuario.findMany();
 				if (user) {
-					await prisma.usuario.deleteMany();
+					await prisma.usuario.deleteMany({
+						where: {
+							role: "AVALIADOR",
+						},
+					});
 				}
 
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -97,7 +117,7 @@ export async function ImportAvaliador(app: FastifyInstance) {
 							where: { cpf: response.E.toString() },
 							create: {
 								nome: response.D.toString(),
-								cpf: await encrypt(formatCpf(response.E.toString())),
+								cpf: formatCpf(response.E.toString()),
 								telefone: formatTelefone(response.G.toString()),
 								email: await encrypt(response.F.toString()),
 								role: "AVALIADOR",
@@ -119,6 +139,7 @@ export async function ImportAvaliador(app: FastifyInstance) {
 				return reply.status(201).send({
 					message: "created successfully",
 				});
+
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			} catch (err: any) {
 				return reply.status(403).send({

@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import util from "node:util";
 import XLSX from "xlsx";
@@ -8,50 +8,55 @@ import { randomUUID } from "node:crypto";
 import fastifyMultipart from "@fastify/multipart";
 import path from "node:path";
 import { encrypt } from "src/lib/crypto";
-
-interface FileRequest extends FastifyRequest {
-	fileData?: {
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		file: any;
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		formFields: any;
-	};
-}
-
-export async function fileMiddleware(app: FastifyInstance) {
-	app.addHook("preHandler", async (req: FileRequest, reply) => {
-		if (req.isMultipart()) {
-			const file = await req.file();
-			console.log("Arquivo recebido:", file);
-			const formFields = req.body;
-
-			req.fileData = {
-				file,
-				formFields,
-			};
-		}
-	});
-}
+import type { UserJWTPayload } from "src/utils/types";
 
 export async function ImportTrabalho(app: FastifyInstance) {
-	app.post("/trabalho/import", async (req: FileRequest, reply) => {
-		const fileData = req.fileData;
+	app.register(fastifyMultipart);
+	app.post("/trabalho/import", async (req, reply) => {
+		const data = await req.file();
 
-		if (!fileData) {
+		// Verifica a existencia do arquivo
+		if (!data) {
 			return reply.status(404).send({
 				message: "File not provided",
 			});
 		}
 
-		const file = fileData.file;
-		const extension = path.extname(file.filename);
-
+		const extension = path.extname(data.filename);
+		// Verifica se o tipo do arquivo é xlsx
 		if (extension !== ".xlsx") {
 			return reply.status(400).send({
 				message: "File must be xlsx",
 			});
 		}
 
+		let userJWTData: UserJWTPayload | null = null;
+
+		try {
+			const authorization = req.headers.authorization;
+			const access_token = authorization?.split("Bearer ")[1];
+			userJWTData = app.jwt.decode(access_token as string);
+		} catch (error) {
+			return reply.status(403).send({
+				message: "Token missing",
+			});
+		}
+
+		console.log("TESTEEEEEEEEEE", userJWTData);
+
+		const loggedUser = await prisma.usuario.findUnique({
+			where: {
+				id: userJWTData?.id,
+			},
+		});
+
+		if (loggedUser?.role !== "ADMIN") {
+			return reply.status(401).send({
+				message: "Unauthorized",
+			});
+		}
+
+		// Cria a pasta uploads para o armazenamento do arquivo
 		fs.access("uploads", fs.constants.F_OK, (err) => {
 			if (err) {
 				fs.mkdirSync("uploads");
@@ -59,16 +64,15 @@ export async function ImportTrabalho(app: FastifyInstance) {
 		});
 
 		const uid = randomUUID();
-		const filePath = `uploads/${uid}-${file.filename}`;
+		const filePath = `uploads/${uid}-${data.filename}`;
 		const writeStream = fs.createWriteStream(filePath);
 		const pump = util.promisify(pipeline);
-		await pump(file.file, writeStream);
+		await pump(data.file, writeStream);
 
 		const fileBuffer = await fs.promises.readFile(filePath);
 		const workbook = XLSX.read(fileBuffer, { type: "buffer" });
 
 		const sheetNames = workbook.SheetNames;
-
 		// biome-ignore lint/correctness/noUnreachable: <explanation>
 		for (let i = 0; i < sheetNames.length; i++) {
 			const worksheet = workbook.Sheets[sheetNames[i]];
@@ -109,11 +113,15 @@ export async function ImportTrabalho(app: FastifyInstance) {
 						if (!existingAuthor) {
 							const newAuthor = await prisma.usuario.create({
 								data: {
-									nome: response.D.toString(),
-									cpf: await encrypt(formatCpf(response.E.toString())),
-									email: await encrypt(response.F.toString()),
-									telefone: formatTelefone(response.G.toString()),
-									formacao: response.H.toString(),
+									nome: response.D ? response.D.toString() : "",
+									cpf: response.E
+										? await encrypt(formatCpf(response.E.toString()))
+										: "",
+									email: response.F ? await encrypt(response.F.toString()) : "",
+									telefone: response.G
+										? formatTelefone(response.G.toString())
+										: "",
+									formacao: response.I ? response.I.toString() : "",
 									role: "NORMAL",
 								},
 							});
@@ -126,16 +134,22 @@ export async function ImportTrabalho(app: FastifyInstance) {
 
 						await prisma.trabalho.create({
 							data: {
-								instituicao: await encrypt(response.H.toString()),
-								nivel_ensino: await encrypt(response.I.toString()),
-								titulo_trabalho: await encrypt(response.AL.toString()),
-								modalidade: response.AK.toString(),
+								instituicao: response.H
+									? await encrypt(response.H.toString())
+									: "",
+								nivel_ensino: response.I
+									? await encrypt(response.I.toString())
+									: "",
+								titulo_trabalho: response.AZ
+									? await encrypt(response.AZ.toString())
+									: "",
+								modalidade: response.AY ? response.AY.toString() : "",
 								area:
-									response.AO !== undefined
-										? response.AO
-										: response.AP === undefined
+									response.BC !== undefined
+										? response.BC
+										: response.BD === undefined
 											? ""
-											: response.AP,
+											: response.BD,
 								autores: {
 									connect: {
 										id: authorId,
@@ -150,6 +164,7 @@ export async function ImportTrabalho(app: FastifyInstance) {
 				return reply.status(201).send({
 					message: "created successfully",
 				});
+
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			} catch (err: any) {
 				return reply.status(403).send({

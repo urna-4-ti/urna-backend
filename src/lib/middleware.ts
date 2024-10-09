@@ -15,11 +15,26 @@ export async function fileMiddleware(app: FastifyInstance) {
 			const file = await req.file();
 			const formFields = req.body;
 
+			// Verifique se o arquivo foi enviado
+			if (!file) {
+				return reply.status(400).send({
+					message: "Arquivo não enviado",
+				});
+			}
+
 			// Processa os campos do formulário e o arquivo
 			req.fileData = {
 				file,
 				formFields,
 			};
+
+			console.log("req.isMultipart():", req.isMultipart());
+			console.log("req.body:", req.body);
+			console.log("req.file():", await req.file());
+		} else {
+			return reply.status(400).send({
+				message: "Requisição não é multipart/form-data",
+			});
 		}
 	});
 }

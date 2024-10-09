@@ -10,6 +10,9 @@ interface RouteParams {
 }
 
 export async function avaliacao(app: FastifyInstance) {
+	app.register(fastifyMultipart, {
+		attachFieldsToBody: true,
+	});
 	app.post<{ Params: RouteParams }>(
 		"/avaliacao/:avaliador/:trabalho",
 		async (req, reply) => {

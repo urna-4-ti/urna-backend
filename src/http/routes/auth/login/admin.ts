@@ -1,14 +1,18 @@
 import { z } from "zod";
 // biome-ignore lint/style/useImportType: <explanation>
 import { FastifyInstance } from "fastify";
-import { prisma } from "../../../lib/prisma";
-import { compareHash, decrypt } from "../../../lib/crypto";
+import { prisma } from "../../../../lib/prisma";
+import { compareHash, decrypt } from "../../../../lib/crypto";
 import { parseBody } from "src/utils/parseBody";
 import { Prisma, type Usuario } from "@prisma/client";
 import fastifyMultipart from "@fastify/multipart";
 import fastifyJwt from "@fastify/jwt";
 
 export async function signIn(app: FastifyInstance) {
+	app.register(fastifyMultipart, {
+		attachFieldsToBody: true,
+	});
+
 	app.post("/auth/signIn", async (request, reply) => {
 		const loginBody = z.object({
 			email: z.string().email("The field is not email"),
@@ -52,7 +56,6 @@ export async function signIn(app: FastifyInstance) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				return reply.status(400).send({
 					message: error.message,
-					cause: error.cause,
 					code: error.code,
 					name: error.name,
 				});

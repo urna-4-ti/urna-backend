@@ -9,7 +9,7 @@ import path from "node:path";
 
 // routes
 import { signUp } from "./routes/auth/signUp";
-import { signIn } from "./routes/auth/login";
+import { signIn } from "./routes/auth/login/admin";
 
 import fastifyMultipart from "@fastify/multipart";
 import { ConnectWork } from "./routes/trabalho/connect-work";
@@ -23,6 +23,9 @@ import { deleteAvaliador } from "./routes/avaliador/delete";
 import { getOneAvaliador } from "./routes/avaliador/find-one";
 import { getAvaliadores } from "./routes/avaliador/find";
 import { fileMiddleware } from "src/lib/middleware";
+import { avaliadorSignIn } from "./routes/auth/login/avaliador";
+import { getAllVotedTrabalhos } from "./routes/avaliacao/find";
+import { avaliacao } from "./routes/avaliacao/trabalho";
 
 const app = fastify();
 
@@ -36,9 +39,6 @@ app.register(cors, {
 
 app.register(fjwt, {
 	secret: process.env.JWT_ASSIGN || "secret-key",
-});
-app.register(fastMultipart, {
-	attachFieldsToBody: true,
 });
 
 app.addHook("preHandler", (req, _, next) => {
@@ -55,12 +55,12 @@ app.register(fstatic, {
 	prefix: "/public/",
 });
 
-app.register(fileMiddleware);
 // routes
 
 // auth
 app.register(signUp);
 app.register(signIn);
+app.register(avaliadorSignIn);
 
 // =======================
 
@@ -72,6 +72,7 @@ app.register(deleteTrabalho);
 app.register(getOneTrabalho);
 app.register(getTrabalho);
 app.register(DisconnectWork);
+app.register(avaliacao);
 
 // =======================
 
@@ -81,6 +82,7 @@ app.register(ImportAvaliador);
 app.register(deleteAvaliador);
 app.register(getOneAvaliador);
 app.register(getAvaliadores);
+app.register(getAllVotedTrabalhos);
 
 // =======================
 

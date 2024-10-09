@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { prisma } from "../../../lib/prisma";
 import fastifyMultipart from "@fastify/multipart";
+import type { UserJWTPayload } from "src/utils/types";
 
 interface RouteParams {
 	avaliador: string;
@@ -16,6 +17,32 @@ export async function DisconnectWork(app: FastifyInstance) {
 			if (!idTrabalho || !idAvaliador) {
 				return reply.status(400).send({
 					message: "Missing required parameters",
+				});
+			}
+
+			let userJWTData: UserJWTPayload | null = null;
+
+			try {
+				const authorization = req.headers.authorization;
+				const access_token = authorization?.split("Bearer ")[1];
+				userJWTData = app.jwt.decode(access_token as string);
+			} catch (error) {
+				return reply.status(403).send({
+					message: "Token missing",
+				});
+			}
+
+			console.log("TESTEEEEEEEEEE", userJWTData);
+
+			const loggedUser = await prisma.usuario.findUnique({
+				where: {
+					id: userJWTData?.id,
+				},
+			});
+
+			if (loggedUser?.role !== "ADMIN") {
+				return reply.status(401).send({
+					message: "Unauthorized",
 				});
 			}
 
